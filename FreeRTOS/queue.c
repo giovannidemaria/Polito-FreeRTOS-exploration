@@ -3085,4 +3085,3 @@ BaseType_t xQueueIsQueueFullFromISR( const QueueHandle_t xQueue )
     }
 
 #endif /* configUSE_QUEUE_SETS */
-//ciao
