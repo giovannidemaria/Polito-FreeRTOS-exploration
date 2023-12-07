@@ -3,7 +3,7 @@ IMAGE := RTOSDemo.out
 SUB_MAKEFILE_DIR = ./library-makefiles
 
 # The directory that contains the /source and /demo sub directories.
-FREERTOS_ROOT = ./../../../
+FREERTOS_ROOT = ./../../../../
 
 CC = arm-none-eabi-gcc
 LD = arm-none-eabi-gcc
@@ -36,7 +36,7 @@ SOURCE_FILES += $(KERNEL_DIR)/portable/GCC/ARM_CM3/port.c
 # Common demo files for the "full" build, as opposed to the "blinky" build - 
 # these files are build by all the FreeRTOS kernel demos.
 #
-DEMO_ROOT = $(FREERTOS_ROOT)
+DEMO_ROOT = $(FREERTOS_ROOT)/Examples
 COMMON_DEMO_FILES = $(DEMO_ROOT)/Common/Minimal
 INCLUDE_DIRS += -I$(DEMO_ROOT)/Common/include
 VPATH += $(COMMON_DEMO_FILES)
@@ -72,7 +72,7 @@ SOURCE_FILES += $(COMMON_DEMO_FILES)/TimerDemo.c
 # Application entry point.  main_blinky is self contained.  main_full builds
 # the above common demo (and test) files too.
 #
-DEMO_PROJECT = $(DEMO_ROOT)/Example
+DEMO_PROJECT = $(DEMO_ROOT)/Demo0
 VPATH += $(DEMO_PROJECT)
 INCLUDE_DIRS += -I$(DEMO_PROJECT) -I$(DEMO_PROJECT)/CMSIS
 SOURCE_FILES += (DEMO_PROJECT)/main.c
