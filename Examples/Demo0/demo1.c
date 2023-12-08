@@ -47,7 +47,7 @@ void vTimerCallback(TimerHandle_t xTimer) {
     }
 }
 
-int demo1() {
+void demo1() {
     /* Timer creation */
     xTimer = xTimerCreate("Timer", pdMS_TO_TICKS(currentDelay), pdTRUE, (void *) 0, vTimerCallback);
 
@@ -64,6 +64,4 @@ int demo1() {
     } else {
         printf("ERROR: bad timer creation.\n");
     }
-
-    return 0;
 }
