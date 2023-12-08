@@ -38,7 +38,7 @@ Callback function used to:
 */
 void vTimerCallback(TimerHandle_t xTimer) {
     if (repetitions < MAX_REPS) {
-        printf("ciao delay: %d\n", currentDelay);
+        printf("Message delay: %d\n", currentDelay);
         repetitions++;
         currentDelay += 1000;
         xTimerChangePeriod(xTimer, pdMS_TO_TICKS((currentDelay)), 0);
