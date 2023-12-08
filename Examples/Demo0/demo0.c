@@ -47,7 +47,7 @@ void vTimerCallback(TimerHandle_t xTimer) {
     }
 }
 
-void demo1() {
+void demo0() {
     /* Timer creation */
     xTimer = xTimerCreate("Timer", pdMS_TO_TICKS(currentDelay), pdTRUE, (void *) 0, vTimerCallback);
 

@@ -81,7 +81,7 @@ required UART registers. */
  */
 extern void main_blinky( void );
 extern void main_full( void );
-extern void demo1( void );
+extern void demo0( void );
 
 /*
  * Only the comprehensive demo uses application hook (callback) functions.  See
@@ -109,7 +109,7 @@ void main( void )
 	of this file. */
 	#if ( mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1 )
 	{
-		demo1();
+		demo0();
 	}
 	#else
 	{
