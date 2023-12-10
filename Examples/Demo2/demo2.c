@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
-#include "FreeRTOSConfigExtensions.h"
-
 /* Ensure these are defined in FreeRTOSConfig.h */
 #ifndef configGENERATE_RUN_TIME_STATS
 #error "configGENERATE_RUN_TIME_STATS should be defined in FreeRTOSConfig.h"
