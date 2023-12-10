@@ -49,7 +49,7 @@
 
 
 
-#define configUSE_TRACE_FACILITY 0
+//#define configUSE_TRACE_FACILITY 0
 
 #define configUSE_TICKLESS_IDLE         0
 #define configUSE_PREEMPTION			1
