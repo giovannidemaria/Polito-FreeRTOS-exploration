@@ -72,13 +72,12 @@ SOURCE_FILES += $(COMMON_DEMO_FILES)/TimerDemo.c
 # Application entry point.  main_blinky is self contained.  main_full builds
 # the above common demo (and test) files too.
 #
-DEMO_PROJECT = $(DEMO_ROOT)/Demo0
+DEMO_PROJECT = $(DEMO_ROOT)/demo2
 VPATH += $(DEMO_PROJECT)
 INCLUDE_DIRS += -I$(DEMO_PROJECT) -I$(DEMO_PROJECT)/CMSIS
 SOURCE_FILES += (DEMO_PROJECT)/main.c
 SOURCE_FILES += (DEMO_PROJECT)/main_blinky.c
 SOURCE_FILES += (DEMO_PROJECT)/main_full.c
-SOURCE_FILES += (DEMO_PROJECT)/demo0.c
 SOURCE_FILES += (DEMO_PROJECT)/demo2.c
 SOURCE_FILES += ./startup_gcc.c
 # Lightweight print formatting to use in place of the heavier GCC equivalent.

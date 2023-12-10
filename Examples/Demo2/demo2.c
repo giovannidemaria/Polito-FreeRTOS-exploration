@@ -1,4 +1,4 @@
-/* In this third demo, we use a timer to create a delay between output messages.
+/* In this first demo, we use a timer to create a delay between output messages.
 First, the delay is 1 second, and after each print, it is increased by 1.
 In order to make it easier, we have defined a maximum number of reperition, 
 but the same code, could be written for an undefined number of repetition of print.
@@ -10,46 +10,58 @@ but the same code, could be written for an undefined number of repetition of pri
 /* Kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "timers.h"
+#include "queue.h"
 
-/* Definizione della dimensione del buffer per le informazioni sui task */
-#define TASK_INFO_BUFFER_SIZE 1024
+/* Limit the number of print */
+#define MAX_REPS 7
 
-/* Prototipo della funzione per il task di monitoraggio */
-void vSystemStatusTask(void *pvParameters);
+/* Set a fixed delay */
+#define DELAY 1000
 
-int demo2(){
-    /* Inizializzazione del sistema e delle periferiche... */
+/* Definition of the timer used to delay output messages */
+TimerHandle_t xTimer;
 
-    /* Creazione del task di monitoraggio dello stato del sistema */
-    xTaskCreate(vSystemStatusTask, "SysStatus", 1000, NULL, 1, NULL);
+/* Repetitions counter used to limit the number of messages printed */
+int repetitions = 0;
 
-    /* Avvio dello scheduler */
-    vTaskStartScheduler();
+/* Used to compute the current delay */
+int currentDelay = DELAY;
 
-    for (;;);
-    return 0;
+/* 
+Callback function used to:
+    - check the number of repetitions already performed;
+    - increased it if less than MAX_REPS;
+    - compute the current delay;
+    - print the message;
+    - stop the timer if repetitions = MAX_REPS.
+*/
+void vTimerCallback(TimerHandle_t xTimer) {
+    if (repetitions < MAX_REPS) {
+        printf("Message delay: %d\n", currentDelay);
+        repetitions++;
+        currentDelay += 1000;
+        xTimerChangePeriod(xTimer, pdMS_TO_TICKS((currentDelay)), 0);
+    } else {
+        xTimerStop(xTimer, 0);
+    }
 }
 
-void vSystemStatusTask(void *pvParameters){
-    (void) pvParameters;
+void demo2() {
+    /* Timer creation */
+    xTimer = xTimerCreate("Timer", pdMS_TO_TICKS(currentDelay), pdTRUE, (void *) 0, vTimerCallback);
 
-    char buffer[TASK_INFO_BUFFER_SIZE];
+    if (xTimer != NULL) {
+        /* Function used to start the timer. No block time is specified. */
+        if ((xTimerStart(xTimer, 0)) != pdPASS) {
+            printf("ERROR: timer cannot be started.\n");
+        }
 
-    while (1)
-    {
-        /* Pulizia del buffer */
-        memset(buffer, 0, TASK_INFO_BUFFER_SIZE);
-
-        /* Ottenimento delle informazioni sui task */
-        vTaskList(buffer);
-        printf("Task States:\n%s\n", buffer);
-
-        /* Ottenimento dell'uso della memoria heap */
-        printf("Free Heap Size: %u bytes\n", xPortGetFreeHeapSize());
-
-        /* Aggiungi qui altre metriche di stato del sistema se necessario */
-
-        /* Attendi per un po' prima del prossimo aggiornamento */
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        /* Starting FreeRTOS scheduler */
+        vTaskStartScheduler();
+        
+        for(;;);
+    } else {
+        printf("ERROR: bad timer creation.\n");
     }
 }

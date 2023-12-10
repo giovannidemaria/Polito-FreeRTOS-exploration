@@ -81,7 +81,7 @@ required UART registers. */
  */
 extern void main_blinky( void );
 extern void main_full( void );
-extern void demo0( void );
+extern void demo2( void );
 
 /*
  * Only the comprehensive demo uses application hook (callback) functions.  See
