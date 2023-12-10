@@ -143,3 +143,6 @@ machine on which the test is developed). */
     SysTick_Config(24000)
 
 #define portGET_RUN_TIME_COUNTER_VALUE() (SysTick->VAL)
+
+#define configUSE_STATS_FORMATTING_FUNCTIONS 1
+#define configUSE_TRACE_FACILITY 1

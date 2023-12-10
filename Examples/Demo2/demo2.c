@@ -21,8 +21,7 @@ TaskHandle_t Task1Handle, Task2Handle;
 void SimpleCounter();
 void Task2();
 
-int demo2(void) 
-{
+int demo2(void){
     /* Create tasks */
     xTaskCreate(SimpleCounter, "Task1", configMINIMAL_STACK_SIZE, NULL, 1, &Task1Handle);
     xTaskCreate(Task2, "Task2", configMINIMAL_STACK_SIZE, NULL, 1, &Task2Handle);
@@ -36,8 +35,7 @@ int demo2(void)
     return 0;
 }
 
-void SimpleCounter() 
-{
+void SimpleCounter(){
         uint32_t i = 0;
         while(1){
             printf("Task1 Counter: %lu\n", i);
@@ -46,19 +44,15 @@ void SimpleCounter()
     }
 }
 
-void Task2() 
-{
-    char statsBuffer[RUNTIME_STATS_BUFFER_SIZE];
+void Task2(){
 
     for (;;) 
     {
         /* Wait for a period to gather sufficient runtime statistics */
         vTaskDelay(pdMS_TO_TICKS(1000));
 
-        /* Generate runtime statistics */
-        vTaskGetRunTimeStats(statsBuffer);
-
-        /* Print the runtime statistics */
-        printf("%s", statsBuffer);
+        char buffer[1024];
+        vTaskList(buffer);
+        printf("%s", buffer);
     }
 }
