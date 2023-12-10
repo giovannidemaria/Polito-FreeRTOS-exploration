@@ -49,8 +49,6 @@
 /* FreeRTOS includes. */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "FreeRTOSConfigExtensions.h"
-
 
 /* Standard includes. */
 #include <stdio.h>
@@ -84,8 +82,6 @@ required UART registers. */
 extern void main_blinky( void );
 extern void main_full( void );
 extern void demo2( void );
-extern void portCONFIGURE_TIMER_FOR_RUN_TIME_STATS(void);
-extern unsigned long portGET_RUN_TIME_COUNTER_VALUE(void);
 
 /*
  * Only the comprehensive demo uses application hook (callback) functions.  See

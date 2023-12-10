@@ -23,6 +23,8 @@
  * https://github.com/FreeRTOS
  *
  */
+#include "cmsis.h" 
+#include "core_cm3.h"
 
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
@@ -135,10 +137,9 @@ machine on which the test is developed). */
 
 #endif /* FREERTOS_CONFIG_H */
 
+//#define  SystemCoreClock 24000000
+
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() \
-    { \
-        /* Configura SysTick per interrompere a una frequenza specifica */ \
-        SysTick_Config(SystemCoreClock / 1000); /* Esempio: SysTick a 1 ms */ \
-    }
+    SysTick_Config(24000)
 
 #define portGET_RUN_TIME_COUNTER_VALUE() (SysTick->VAL)
