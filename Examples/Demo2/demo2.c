@@ -1,23 +1,63 @@
-/* In this first demo, we use a timer to create a delay between output messages.
-First, the delay is 1 second, and after each print, it is increased by 1.
-In order to make it easier, we have defined a maximum number of reperition, 
-but the same code, could be written for an undefined number of repetition of print.
-*/
-
-/* Standard includes. */
-#include <stdio.h>
-
-/* Kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "timers.h"
-#include "queue.h"
 
+/* Ensure these are defined in FreeRTOSConfig.h */
+#ifndef configGENERATE_RUN_TIME_STATS
+#error "configGENERATE_RUN_TIME_STATS should be defined in FreeRTOSConfig.h"
+#endif
 
+#ifndef configUSE_STATS_FORMATTING_FUNCTIONS
+#error "configUSE_STATS_FORMATTING_FUNCTIONS should be defined in FreeRTOSConfig.h"
+#endif
 
-void demo2() {
+/* Buffer size for the runtime stats */
+#define RUNTIME_STATS_BUFFER_SIZE  1024
 
-printf("Ciao Mondo!");
+/* Task handles */
+TaskHandle_t Task1Handle, Task2Handle;
 
+/* Task function prototypes */
+void SimpleCounter(void *pvParameters);
+void Task2(void *pvParameters);
 
+int main(void) 
+{
+    /* Create tasks */
+    xTaskCreate(SimpleCounter, "Task1", configMINIMAL_STACK_SIZE, NULL, 1, &Task1Handle);
+    xTaskCreate(Task2, "Task2", configMINIMAL_STACK_SIZE, NULL, 1, &Task2Handle);
+
+    /* Start the scheduler */
+    vTaskStartScheduler();
+
+    /* Infinite loop */
+    for(;;);
+
+    return 0;
+}
+
+void SimpleCounter(void *pvParameters) 
+{
+        uint32_t i = 0;
+        while(1){
+            print("Task1 Counter: %lu\n", i);
+            i++;
+            vTaskDelay(pdMS_TO_TICKS(3000));
+    }
+}
+
+void Task2(void *pvParameters) 
+{
+    char statsBuffer[RUNTIME_STATS_BUFFER_SIZE];
+
+    for (;;) 
+    {
+        /* Wait for a period to gather sufficient runtime statistics */
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        /* Generate runtime statistics */
+        vTaskGetRunTimeStats(statsBuffer);
+
+        /* Print the runtime statistics */
+        printf("%s", statsBuffer);
+    }
 }
