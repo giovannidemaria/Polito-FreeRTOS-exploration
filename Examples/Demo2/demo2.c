@@ -1,5 +1,7 @@
+#include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
+#include "FreeRTOSConfigExtensions.h"
 
 /* Ensure these are defined in FreeRTOSConfig.h */
 #ifndef configGENERATE_RUN_TIME_STATS
@@ -17,8 +19,8 @@
 TaskHandle_t Task1Handle, Task2Handle;
 
 /* Task function prototypes */
-void SimpleCounter(void *pvParameters);
-void Task2(void *pvParameters);
+void SimpleCounter();
+void Task2();
 
 int demo2(void) 
 {
@@ -35,17 +37,17 @@ int demo2(void)
     return 0;
 }
 
-void SimpleCounter(void *pvParameters) 
+void SimpleCounter() 
 {
         uint32_t i = 0;
         while(1){
-            print("Task1 Counter: %lu\n", i);
+            printf("Task1 Counter: %lu\n", i);
             i++;
             vTaskDelay(pdMS_TO_TICKS(3000));
     }
 }
 
-void Task2(void *pvParameters) 
+void Task2() 
 {
     char statsBuffer[RUNTIME_STATS_BUFFER_SIZE];
 

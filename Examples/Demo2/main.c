@@ -49,6 +49,8 @@
 /* FreeRTOS includes. */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "FreeRTOSConfigExtensions.h"
+
 
 /* Standard includes. */
 #include <stdio.h>
