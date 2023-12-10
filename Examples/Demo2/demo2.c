@@ -2,19 +2,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include <system.h> // Assicurati di includere gli header necessari per SysTick e SystemCoreClock
-
-#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() \
-    { \
-        /* Configura SysTick per interrompere a una frequenza specifica */ \
-        SysTick_Config(SystemCoreClock / 1000); /* Esempio: SysTick a 1 ms */ \
-    }
-
-#define portGET_RUN_TIME_COUNTER_VALUE() (SysTick->VAL)
-
-
-
-
 /* Ensure these are defined in FreeRTOSConfig.h */
 #ifndef configGENERATE_RUN_TIME_STATS
 #error "configGENERATE_RUN_TIME_STATS should be defined in FreeRTOSConfig.h"

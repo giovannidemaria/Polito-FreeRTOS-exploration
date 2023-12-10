@@ -135,5 +135,10 @@ machine on which the test is developed). */
 
 #endif /* FREERTOS_CONFIG_H */
 
-void portCONFIGURE_TIMER_FOR_RUN_TIME_STATS(void);
-unsigned long portGET_RUN_TIME_COUNTER_VALUE(void);
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() \
+    { \
+        /* Configura SysTick per interrompere a una frequenza specifica */ \
+        SysTick_Config(SystemCoreClock / 1000); /* Esempio: SysTick a 1 ms */ \
+    }
+
+#define portGET_RUN_TIME_COUNTER_VALUE() (SysTick->VAL)
