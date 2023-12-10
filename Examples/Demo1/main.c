@@ -109,7 +109,7 @@ void main( void )
 	of this file. */
 	#if ( mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1 )
 	{
-		demo1();
+		demo2();
 	}
 	#else
 	{
