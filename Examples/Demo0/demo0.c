@@ -11,7 +11,6 @@ but the same code, could be written for an undefined number of repetition of pri
 #include "FreeRTOS.h"
 #include "task.h"
 #include "timers.h"
-#include "queue.h"
 
 /* Limit the number of print */
 #define MAX_REPS 7

@@ -79,6 +79,7 @@ SOURCE_FILES += (DEMO_PROJECT)/main.c
 SOURCE_FILES += (DEMO_PROJECT)/main_blinky.c
 SOURCE_FILES += (DEMO_PROJECT)/main_full.c
 SOURCE_FILES += (DEMO_PROJECT)/demo0.c
+SOURCE_FILES += (DEMO_PROJECT)/demo1.c
 SOURCE_FILES += ./startup_gcc.c
 # Lightweight print formatting to use in place of the heavier GCC equivalent.
 SOURCE_FILES += ./printf-stdarg.c
