@@ -84,6 +84,8 @@ required UART registers. */
 extern void main_blinky( void );
 extern void main_full( void );
 extern void demo2( void );
+//extern void portCONFIGURE_TIMER_FOR_RUN_TIME_STATS(void);
+//extern unsigned long portGET_RUN_TIME_COUNTER_VALUE(void);
 
 /*
  * Only the comprehensive demo uses application hook (callback) functions.  See
@@ -91,11 +93,14 @@ extern void demo2( void );
  */
 void vFullDemoTickHookFunction( void );
 void vFullDemoIdleFunction( void );
+unsigned long portGET_RUN_TIME_COUNTER_VALUE(void);
+static void prvUARTInit( void );
+void portCONFIGURE_TIMER_FOR_RUN_TIME_STATS(void);
 
 /*
  * Printf() output is sent to the serial port.  Initialise the serial hardware.
  */
-static void prvUARTInit( void );
+
 
 /*-----------------------------------------------------------*/
 
@@ -308,4 +313,15 @@ void *malloc( size_t size )
 	portDISABLE_INTERRUPTS();
 	for( ;; );
 
+}
+
+void portCONFIGURE_TIMER_FOR_RUN_TIME_STATS(void){
+    /* Example using SysTick as the timer */
+    /* Configure SysTick to interrupt at a specific frequency */
+    SysTick_Config(SystemCoreClock / 1000); // Example: SysTick at 1 ms
+}
+
+unsigned long portGET_RUN_TIME_COUNTER_VALUE(void){
+    /* Return the SysTick current value. */
+    return SysTick->VAL;
 }

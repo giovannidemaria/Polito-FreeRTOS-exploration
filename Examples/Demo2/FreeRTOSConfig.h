@@ -134,3 +134,6 @@ machine on which the test is developed). */
 #define bktSECONDARY_PRIORITY	( configMAX_PRIORITIES - 4 )
 
 #endif /* FREERTOS_CONFIG_H */
+
+void portCONFIGURE_TIMER_FOR_RUN_TIME_STATS(void);
+unsigned long portGET_RUN_TIME_COUNTER_VALUE(void);
