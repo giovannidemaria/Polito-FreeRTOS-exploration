@@ -20,7 +20,7 @@ TaskHandle_t Task1Handle, Task2Handle;
 void SimpleCounter(void *pvParameters);
 void Task2(void *pvParameters);
 
-int main(void) 
+int demo2(void) 
 {
     /* Create tasks */
     xTaskCreate(SimpleCounter, "Task1", configMINIMAL_STACK_SIZE, NULL, 1, &Task1Handle);
