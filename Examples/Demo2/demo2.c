@@ -36,23 +36,25 @@ int demo2(void){
 }
 
 void SimpleCounter(){
-        uint32_t i = 0;
+        int i = 0;
         while(1){
-            printf("Task1 Counter: %lu\n", i);
+            printf("Task1 Counter: %d\n", i);
             i++;
-            vTaskDelay(pdMS_TO_TICKS(3000));
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            if (i >= 99999) {
+                i = 0;
+        }
     }
 }
 
 void Task2(){
 
-    for (;;) 
-    {
+    while(1){
         /* Wait for a period to gather sufficient runtime statistics */
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(5000));
 
-        char buffer[1024];
-        vTaskList(buffer);
-        printf("%s", buffer);
+        size_t freeHeapSize = xPortGetFreeHeapSize();
+        printf("Free heap size: %u bytes\n", freeHeapSize);
+
     }
 }

@@ -23,8 +23,7 @@
  * https://github.com/FreeRTOS
  *
  */
-#include "cmsis.h" 
-#include "core_cm3.h"
+
 
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
@@ -43,8 +42,8 @@
 
 
 /* Definitions for the sys info application */
-#define configGENERATE_RUN_TIME_STATS    1
-#define configUSE_STATS_FORMATTING_FUNCTIONS    1
+//#define configGENERATE_RUN_TIME_STATS    1
+//#define configUSE_STATS_FORMATTING_FUNCTIONS    1
 
 
 
@@ -136,13 +135,3 @@ machine on which the test is developed). */
 #define bktSECONDARY_PRIORITY	( configMAX_PRIORITIES - 4 )
 
 #endif /* FREERTOS_CONFIG_H */
-
-//#define  SystemCoreClock 24000000
-
-#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() \
-    SysTick_Config(24000)
-
-#define portGET_RUN_TIME_COUNTER_VALUE() (SysTick->VAL)
-
-#define configUSE_STATS_FORMATTING_FUNCTIONS 1
-#define configUSE_TRACE_FACILITY 1
