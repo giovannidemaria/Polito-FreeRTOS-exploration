@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <FreeRTOS.h>
 #include <task.h>
 
@@ -19,7 +20,7 @@ int matrixB[MATRIX_SIZE][MATRIX_SIZE] = {{1, 1, 1, 1, 1, 1, 1, 1},
                                          {1, 1, 1, 1, 1, 1, 1, 1},
                                          {1, 1, 1, 1, 1, 1, 1, 1},
                                          {1, 1, 1, 1, 1, 1, 1, 1},
-                                         {1, 1, 1, 1, 1, 1, 1, 1}};
+                                         {1, 1, 1, 1, 1, 1, 1, 1},};
 int result[MATRIX_SIZE][MATRIX_SIZE];
 
 typedef struct {
@@ -27,7 +28,7 @@ typedef struct {
     int col;
 } TaskParams;
 
-void matrixMul() {
+void matrixMul(void *parameters) {
     TaskParams *params = (TaskParams *)parameters;
 
     int row = params->row;
@@ -41,8 +42,7 @@ void matrixMul() {
     vTaskDelete(NULL);
 }
 
-void printResult() {
-    // Wait for all matrix multiplication tasks to complete
+void printRes(void *parameters) {
     vTaskDelay(pdMS_TO_TICKS(100));
 
     printf("Result Matrix:\n");
@@ -56,8 +56,7 @@ void printResult() {
     vTaskDelete(NULL);
 }
 
-void demo4(void) {
-    // Create tasks for matrix multiplication
+void demo4() {
     for (int i = 0; i < MATRIX_SIZE; i++) {
         for (int j = 0; j < MATRIX_SIZE; j++) {
             TaskParams *params = (TaskParams *)pvPortMalloc(sizeof(TaskParams));
@@ -68,10 +67,9 @@ void demo4(void) {
         }
     }
 
-    xTaskCreate(printResult, "PrintResultTask", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+    xTaskCreate(printRes, "printRes", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
-    // Start the FreeRTOS scheduler
     vTaskStartScheduler();
-
+    
     for(;;);
 }
