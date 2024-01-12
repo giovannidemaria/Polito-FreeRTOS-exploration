@@ -37,145 +37,190 @@
 #include "timers.h"
 #include "semphr.h"
 #include "queue.h"
-
+#include <string.h>
 
 #define MAX_TASKS 3
 #define MAX_COUNT 1
-#define MAX_SALE 2
+#define RED_OPERATION_TICK (5 * configTICK_RATE_HZ)
+#define ORANGE_OPERATION_TICK 4 
+#define GREEN_OPERATION_TICK (3 * configTICK_RATE_HZ)
+
+
 #define PATIENT 9
+#define MAX_SALE 2
 
-// codice, tempo di arrivo
-int patientMatrix[PATIENT][2] = {
-    {0, 2},
-    {1, 6},
-    {2, 12},
-    {0, 14},
-    {0, 18},
-    {2, 22},
-    {1, 26},
-    {2, 28},
-    {0, 18},
-};
+int greenPatients[PATIENT] = {2,6,12,14,18,22,26,28,32};
+int redPatients[PATIENT] = {3,5,10,17,19,22,24,38,41};
 
 
-// la coda identifica le sale operatorie dell'ospedale
+/* Struttura per passare i parametri alla funzione di riempimento della coda */
+typedef struct {
+    QueueHandle_t queue;
+    int dataArray[PATIENT];
+} QueueFillParameters_t;
 
-// creazione coda
-void v0Task( void *pvParameters )
-{
-QueueHandle_t xQueue[3];
+QueueFillParameters_t redParams;
+QueueFillParameters_t greenParams;
 
-    /* Create a queue capable of containing 10 unsigned long values. */
-    xQueue[0] = xQueueCreate( 10, sizeof( int ) );
-    xQueue[1] = xQueueCreate( 10, sizeof( int ) );
-    xQueue[2] = xQueueCreate( 10, sizeof( int ) );
-
-    if( xQueue[0] == NULL || xQueue[1] == NULL  || xQueue[2] == NULL)
-    {
-        /* Queue was not created and must not be used. */
-        printf("ERROR: bad queue creation.\n");
-        exit(-1);
+// Funzione per riempire una coda 
+void fillQueue( void *pvParameters ) {
+    QueueFillParameters_t *params = (QueueFillParameters_t *)pvParameters;
+    const char *taskName = pcTaskGetName(NULL);
+    const char *message;
+    if (strcmp(taskName, "GreenFill") == 0) {
+        message = "verde";
+    } else {
+        message = "rosso";
     }
 
-    /* Riempimento coda */
-    for(int i=0; i < PATIENT; i++){
-         /* Send an integer. Wait for 10 ticks for space to become available if necessary. */
-        if(xQueueSendToBack( xQueue[patientMatrix[i][0]], ( void * ) &patientMatrix[i][1], ( TickType_t ) 10 ) != pdPASS )
-                printf("ERROR: impossibile inserire valore in coda.\n");
-        
-    }
+    // Tempo di inizio
+    TickType_t xStartTime = xTaskGetTickCount(); 
 
-    /* Ottieni il numero di spazi disponibili nella coda */
-    UBaseType_t spaces[3];
-    spaces[0] = uxQueueSpacesAvailable(xQueue[0]);
-    spaces[1] = uxQueueSpacesAvailable(xQueue[1]);
-    spaces[2] = uxQueueSpacesAvailable(xQueue[2]);
+        for (int i = 0; i < PATIENT; i++) {
+        // Calcola il tempo di attesa in tick dal momento di inizio del task
+        TickType_t delay = params->dataArray[i] * configTICK_RATE_HZ;
+        TickType_t xNow = xTaskGetTickCount();
+        TickType_t xWait = (xStartTime + delay > xNow) ? (xStartTime + delay - xNow) : 0;
 
+        // Aspetta fino al momento specificato
+        vTaskDelay(xWait);
 
-    // Stampa il valore
-    printf("Spazi disponibile nella coda verde: %u\n", (unsigned long)spaces[0]);
-    printf("Spazi disponibile nella coda arancione: %u\n", (unsigned long)spaces[1]);
-    printf("Spazi disponibile nella coda rossoa: %u\n", (unsigned long)spaces[2]);
-
-
- }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-SemaphoreHandle_t xSemaphores[MAX_TASKS];
-
-void vTask();
-void vTask2();
-void vTask3();
-
-void vTask3() {
-    while(1) {
-        if (xSemaphoreTake(xSemaphores[2], portMAX_DELAY) == pdTRUE) {
-            printf("After 3 seconds...\n");
-            vTaskDelay(pdMS_TO_TICKS(3000));
-            printf("Wake up: semaphore 3\n");
-            xSemaphoreGive(xSemaphores[0]);
+        // Invia il dato alla coda
+        if (xQueueSend(params->queue, &(params->dataArray[i]), portMAX_DELAY) != pdPASS) {
+            printf("Errore nell'inviare i dati alla coda\n");
         }
 
+        printf("Al secondo %d è arrivato un paziente catalogato come codice %s\n", params->dataArray[i], message);
+    }
+
+
+    for( ;; );
+}
+
+TimerHandle_t xTimers[MAX_SALE];
+SemaphoreHandle_t xSemaphoreSaleOperatorie;
+
+// Callback del timer che segnala il completamento di un'operazione
+void operationCompleteCallback(TimerHandle_t xTimer) {
+    int salaId = (int)pvTimerGetTimerID(xTimer);
+    printf("Fine operazione nella sala %d\n", salaId);
+    xSemaphoreGive(xSemaphoreSaleOperatorie);
+}
+
+void salaOperatoriaTask(void *pvParameters) {
+    int paziente;
+    char codicePaziente;
+
+    for (;;) {
+        // Imposta un flag per indicare se un paziente è stato trovato
+        BaseType_t pazienteTrovato = pdFALSE;
+
+        if (uxQueueMessagesWaiting(redParams.queue) > 0) {
+            if (xQueueReceive(redParams.queue, &paziente, 0) == pdTRUE) {
+                codicePaziente = 'R';
+                pazienteTrovato = pdTRUE;
+            }
+        } else if (uxQueueMessagesWaiting(greenParams.queue) > 0) {
+            if (xQueueReceive(greenParams.queue, &paziente, 0) == pdTRUE) {
+                codicePaziente = 'G';
+                pazienteTrovato = pdTRUE;
+            }
+        }
+
+        // Avvia l'operazione solo se un paziente è stato effettivamente trovato
+        if (pazienteTrovato && xSemaphoreTake(xSemaphoreSaleOperatorie, 0) == pdTRUE) {
+            TickType_t operationTicks = (codicePaziente == 'R') ? RED_OPERATION_TICK : GREEN_OPERATION_TICK;
+            
+            for (int i = 0; i < MAX_SALE; i++) {
+                if (xTimerIsTimerActive(xTimers[i]) == pdFALSE) {
+                    printf("Inizio operazione su paziente %d, nella sala %d\n", paziente,i);
+                    xTimerChangePeriod(xTimers[i], operationTicks, 0);
+                    xTimerReset(xTimers[i], 0);
+                    vTimerSetTimerID(xTimers[i], (void *)(intptr_t)i);
+                    break;
+                }
+            }
+        } else {
+            // Se non ci sono pazienti, il task attende un breve periodo prima di riprovare
+            vTaskDelay(100);
+        }
     }
 }
 
-void vTask2() {
-    while(1) {
-        if (xSemaphoreTake(xSemaphores[1], portMAX_DELAY) == pdTRUE) {
-            printf("After 2 seconds...\n");
-            vTaskDelay(pdMS_TO_TICKS(2000));
-            printf("Wake up: semaphore 2\n");
-            xSemaphoreGive(xSemaphores[2]);
+/*
+void salaOperatoriaTask(void *pvParameters) {
+    int paziente;
+    for (;;) {
+        // Aspetta finché non ci sono pazienti in una delle due code
+        if (uxQueueMessagesWaiting(redParams.queue) == 0 && uxQueueMessagesWaiting(greenParams.queue) == 0) {
+            vTaskDelay(100); // Attesa prima di controllare di nuovo
         }
 
+        // Cerca prima un paziente nella coda rossa
+        if (uxQueueMessagesWaiting(redParams.queue) > 0) {
+            if (xQueueReceive(redParams.queue, &paziente, 0) == pdTRUE) {
+                // Prova ad ottenere l'accesso a una sala operatoria
+                if (xSemaphoreTake(xSemaphoreSaleOperatorie, portMAX_DELAY) == pdTRUE) {
+                    printf("Inizio operazione su paziente rosso arrivato al secondo %d\n", paziente);
+                    // Simula l'operazione...
+                    vTaskDelay(RED_OPERATION_TICK);
+                    printf("Fine operazione su paziente rosso arrivato al secondo %d\n", paziente);
+                    xSemaphoreGive(xSemaphoreSaleOperatorie);
+                }
+            }
+        }
+
+        // Se non ci sono pazienti rossi, cerca nella coda verde
+        else if (uxQueueMessagesWaiting(greenParams.queue) > 0) {
+            if (xQueueReceive(greenParams.queue, &paziente, 0) == pdTRUE) {
+                // Prova ad ottenere l'accesso a una sala operatoria
+                if (xSemaphoreTake(xSemaphoreSaleOperatorie, portMAX_DELAY) == pdTRUE) {
+                    printf("Inizio operazione su paziente verde arrivato al secondo %d\n", paziente);
+                    // Simula l'operazione...
+                    vTaskDelay(GREEN_OPERATION_TICK);
+                    printf("Fine operazione su paziente verde arrivato al secondo %d\n", paziente);
+                    xSemaphoreGive(xSemaphoreSaleOperatorie);
+                }
+            }
+        }
     }
 }
 
-void vTask() {
-    while(1) {
-        if (xSemaphoreTake(xSemaphores[0], portMAX_DELAY) == pdTRUE) {
-            printf("After 1 second...\n");
-            vTaskDelay(pdMS_TO_TICKS(1000));
-            printf("Wake up: semaphore 1\n");
-            xSemaphoreGive(xSemaphores[1]);
-        }
+*/
 
+
+int demo3( void ) {
+    // Creazione delle code
+    QueueHandle_t redQueue = xQueueCreate(PATIENT, sizeof(int));
+    QueueHandle_t greenQueue = xQueueCreate(PATIENT, sizeof(int));
+
+    if (redQueue == NULL || greenQueue == NULL) {
+        printf("Errore nella creazione delle code\n");
+        return 1;
     }
-}
 
-void demo3() {
-    for (int i = 0; i < MAX_TASKS; i++) {
-        xSemaphores[i] = xSemaphoreCreateCounting(MAX_COUNT, 0);
-        if (xSemaphores[i] == NULL) {
-            printf("ERROR: bad semaphore creation.\n");
-        }
+    // Assegnazione valore ai parametri
+    redParams.queue = redQueue;
+    greenParams.queue = greenQueue;
+
+    // Copia i valori degli array
+    memcpy(redParams.dataArray, redPatients, sizeof(redPatients));
+    memcpy(greenParams.dataArray, greenPatients, sizeof(greenPatients));
+
+    xSemaphoreSaleOperatorie = xSemaphoreCreateCounting(MAX_SALE, MAX_SALE);
+
+    for (int i = 0; i < MAX_SALE; i++) {
+        xTimers[i] = xTimerCreate("OperationTimer", pdMS_TO_TICKS(RED_OPERATION_TICK), pdFALSE, (void *)(intptr_t)i, operationCompleteCallback);
     }
-    xSemaphoreGive(xSemaphores[0]);
-    
-    //xTaskCreate(vTask, "Semaphore", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
-    //xTaskCreate(vTask2, "Semaphore", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
-    //xTaskCreate(vTask3, "Semaphore", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
-    xTaskCreate(v0Task, "Queue", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
 
-    /* Starting FreeRTOS scheduler */
+
+    xTaskCreate( fillQueue, "RedFill", configMINIMAL_STACK_SIZE, &redParams, tskIDLE_PRIORITY + 1, NULL );
+    xTaskCreate( fillQueue, "GreenFill", configMINIMAL_STACK_SIZE, &greenParams, tskIDLE_PRIORITY + 1, NULL );
+
+    xTaskCreate(salaOperatoriaTask, "SalaOper", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2, NULL);
+
+
     vTaskStartScheduler();
-    
-    for(;;);
-}
 
+    for( ;; );
+}
