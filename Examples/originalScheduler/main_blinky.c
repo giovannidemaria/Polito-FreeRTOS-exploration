@@ -7,9 +7,13 @@
 #include "queue.h"
 #include <stdlib.h>
 
-#define PATIENT 9
+#define PATIENT 4
 
+TaskHandle_t xPatientTask[PATIENT];
 TaskHandle_t xSchedulerTaskHandle;
+
+int patientNum = 4;
+
 /* Definizione strutture dati pazienti*/
 typedef struct {
     int patientCode;            // Unique identifier for the patient
@@ -43,10 +47,11 @@ void taskPaziente(void *pvParameter) {
         // Questo ciclo non fa nulla se non aspettare che passino secondi
     }
 
-    printf(" Paziente: %d Fine operazione:%d \n",patient->patientCode,xTaskGetTickCount()/configTICK_RATE_HZ);    
+    printf(" Paziente: %d Fine operazione:%d \n",patient->patientCode,xTaskGetTickCount()/configTICK_RATE_HZ);   
+
+    eliminaPaziente(patient->patientCode, patientNum); 
     // Una volta completato, invia una notifica allo scheduler
     xTaskNotifyGive(xSchedulerTaskHandle);
-    vTaskDelete(NULL);
 }
 
 void eliminaPazientePrimaDellOperazione(PatientInfo_t *patient,int patientCode, int patientNum){
@@ -73,7 +78,7 @@ void eliminaPaziente(int patientCode, int patientNum){
 void taskScheduler(void *pvParameter){
     int i;
     int j=0;
-    int patientNum = 4;
+ 
     PatientInfo_t patientArrived[patientNum];
 
     // Tempo di inizio
@@ -98,34 +103,29 @@ void taskScheduler(void *pvParameter){
         if(j > 0){
             printf("Al tempo %d sono in attesa %d pazienti:\n",xNow/configTICK_RATE_HZ, j);
 
-            // Calcolo la prorità tra i pazienti già arrivati
             for (int k = 0; k < j; k++) {
                 patientArrived[k].priority = patientArrived[k].criticalTime - patientArrived[k].operationDuration + patientArrived[k].arrivalTime - xNow/configTICK_RATE_HZ;
-                if(patientArrived[k].priority >= 0)
+
+                if(patientArrived[k].priority >= 0){
                     printf(" -  Il paziente %d muore se non si opera entro %d \n",patientArrived[k].patientCode,patientArrived[k].priority);
+                    // Creo i task dei pazienti arrivati dando la stessa priorità 
+                    xTaskCreate(taskPaziente, "Paziente", configMINIMAL_STACK_SIZE, (void *)&patientArrived[k], 3, &xPatientTask[k]);
+                }
                 else{
                     printf(" ALLERT: Il paziente %d è deceduto\n",patientArrived[k].patientCode);
                     eliminaPaziente(patientArrived[k].patientCode, patientNum);
                     eliminaPazientePrimaDellOperazione(patientArrived, patientArrived[k].patientCode, patientNum);
                     patientNum--;
-                }
+                }          
             }
-
-            // Ordino il vettore appena creato per priorità
-            qsort(patientArrived, j, sizeof(PatientInfo_t), comparePatients);
-
-            // Estraggo dal vettore il paziente a priorità maggiore 
-            printf("Il paziente %d inizia a essere operato\n",patientArrived[0].patientCode);
-
-            // Avvio il suo task paziente 
-            xTaskCreate(taskPaziente, "Paziente", configMINIMAL_STACK_SIZE, (void *)&patientArrived[0], 3, NULL);    
-            
-            // attendo che il task finisca
+            // Lo scheduler sceglierà a quale dei pazienti dare priorità
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-            // Elimino dal vettore pazienti il paziente
-            eliminaPaziente(patientArrived[0].patientCode, patientNum);
-
+            // Elimina tutti i task creati
+            for (int k = 0; k < j; k++) {
+                vTaskDelete(xPatientTask[k]);
+            }
+            
             // Aggiorno dimenzione vettore pazienti ancora da operare
             patientNum--;
 
@@ -135,7 +135,7 @@ void taskScheduler(void *pvParameter){
     }
 }
 
-int main_scheduler(){
+int original_scheduler(){
 
  // Crea il task scheduler con alta priorità
     xTaskCreate(taskScheduler, "Scheduler", ( ( unsigned short ) 1000 ), NULL, configMAX_PRIORITIES - 1, &xSchedulerTaskHandle);

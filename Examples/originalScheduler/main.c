@@ -110,8 +110,8 @@ void main( void )
 	#if ( mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1 )
 	{
 		// demo0();
-		main_scheduler();
-		//original_scheduler();
+		//main_scheduler();
+		original_scheduler();
 	}
 	#else
 	{

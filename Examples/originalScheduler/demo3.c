@@ -90,7 +90,7 @@ void fillQueue( void *pvParameters ) {
             printf("Errore nell'inviare i dati alla coda\n");
         }
 
-        printf("Tempo: %d secondi; Codice: %s\n", params->dataArray[i], message);
+        printf("Al secondo %d è arrivato un paziente catalogato come codice %s\n", params->dataArray[i], message);
     }
 
 
@@ -103,8 +103,7 @@ SemaphoreHandle_t xSemaphoreSaleOperatorie;
 // Callback del timer che segnala il completamento di un'operazione
 void operationCompleteCallback(TimerHandle_t xTimer) {
     int salaId = (int)pvTimerGetTimerID(xTimer);
-    TickType_t xTime = xTaskGetTickCount()/configTICK_RATE_HZ;
-    printf("Fine operazione nella sala %d al tempo %d secondi\n", salaId, xTime);
+    printf("Fine operazione nella sala %d\n", salaId);
     xSemaphoreGive(xSemaphoreSaleOperatorie);
 }
 
@@ -116,16 +115,14 @@ void salaOperatoriaTask(void *pvParameters) {
         // Imposta un flag per indicare se un paziente è stato trovato
         BaseType_t pazienteTrovato = pdFALSE;
 
-        if (uxQueueMessagesWaiting(redParams.queue) > 0 && uxSemaphoreGetCount(xSemaphoreSaleOperatorie)>0) {
+        if (uxQueueMessagesWaiting(redParams.queue) > 0) {
             if (xQueueReceive(redParams.queue, &paziente, 0) == pdTRUE) {
                 codicePaziente = 'R';
-                printf("\nPRELEVO:%d\n",paziente);
                 pazienteTrovato = pdTRUE;
             }
-        } else if (uxQueueMessagesWaiting(greenParams.queue) > 0 && uxSemaphoreGetCount(xSemaphoreSaleOperatorie)>0) {
+        } else if (uxQueueMessagesWaiting(greenParams.queue) > 0) {
             if (xQueueReceive(greenParams.queue, &paziente, 0) == pdTRUE) {
                 codicePaziente = 'G';
-                printf("\nPRELEVO:%d\n",paziente);
                 pazienteTrovato = pdTRUE;
             }
         }
@@ -227,10 +224,3 @@ int demo3( void ) {
 
     for( ;; );
 }
-
-
-/*
-periodic task
-aperiodic task
-
-*/
