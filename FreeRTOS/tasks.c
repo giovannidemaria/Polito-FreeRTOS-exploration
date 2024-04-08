@@ -223,6 +223,15 @@
     taskRECORD_READY_PRIORITY( ( pxTCB )->uxPriority );                                                \
     listINSERT_END( &( pxReadyTasksLists[ ( pxTCB )->uxPriority ] ), &( ( pxTCB )->xStateListItem ) ); \
     tracePOST_MOVED_TASK_TO_READY_STATE( pxTCB )
+/*
+ * Place the task represented by pxTCB into the appropriate ready list for
+ * the task.  It is inserted sorted by the uxDeadline
+ */
+#define prvAddTaskByDeadlineToReadyList( pxTCB )                                                                 \
+    traceMOVED_TASK_TO_READY_STATE( pxTCB );                                                           \
+    taskRECORD_READY_PRIORITY( ( pxTCB )->uxPriority );                                                \
+    listINSERT( &( pxReadyTasksLists[ ( pxTCB )->uxPriority ] ), &( ( pxTCB )->xStateListItem ) ); \
+    tracePOST_MOVED_TASK_TO_READY_STATE( pxTCB )
 /*-----------------------------------------------------------*/
 
 /*
@@ -317,6 +326,12 @@ typedef struct tskTaskControlBlock       /* The old naming convention is used to
 
     #if ( configUSE_POSIX_ERRNO == 1 )
         int iTaskErrno;
+    #endif
+
+    #if ( configUSE_POLLING_SERVER == 1 )
+        UBaseType_t uxDuration;
+        TickType_t uxPeriod;
+        TickType_t uxDeadline;
     #endif
 } tskTCB;
 
@@ -545,6 +560,12 @@ static void prvInitialiseNewTask( TaskFunction_t pxTaskCode,
  * under the control of the scheduler.
  */
 static void prvAddNewTaskToReadyList( TCB_t * pxNewTCB ) PRIVILEGED_FUNCTION;
+
+/*
+ * Called after a new task has been created and initialised to place the task
+ * under the control of the scheduler.
+ */
+static void prvAddNewTaskByDeadlineToReadyList( TCB_t * pxNewTCB ) PRIVILEGED_FUNCTION;
 
 /*
  * freertos_tasks_c_additions_init() should only be called if the user definable
@@ -1105,6 +1126,91 @@ static void prvAddNewTaskToReadyList( TCB_t * pxNewTCB )
         mtCOVERAGE_TEST_MARKER();
     }
 }
+
+#if (configUSE_POLLING_SERVER == 1 && INCLUDE_xTaskCreateAperiodic == 1)
+static void prvAddNewTaskByDeadlineToReadyList( TCB_t * pxNewTCB )
+{
+    /* Ensure interrupts don't access the task lists while the lists are being
+     * updated. */
+    taskENTER_CRITICAL();
+    {
+        uxCurrentNumberOfTasks++;
+
+        if( pxCurrentTCB == NULL )
+        {
+            /* There are no other tasks, or all the other tasks are in
+             * the suspended state - make this the current task. */
+            pxCurrentTCB = pxNewTCB;
+
+            if( uxCurrentNumberOfTasks == ( UBaseType_t ) 1 )
+            {
+                /* This is the first task to be created so do the preliminary
+                 * initialisation required.  We will not recover if this call
+                 * fails, but we will report the failure. */
+                prvInitialiseTaskLists();
+            }
+            else
+            {
+                mtCOVERAGE_TEST_MARKER();
+            }
+        }
+        else
+        {
+            /* If the scheduler is not already running, make this task the
+             * current task if it is the highest priority task to be created
+             * so far. */
+            if( xSchedulerRunning == pdFALSE )
+            {
+                if( pxCurrentTCB->uxPriority <= pxNewTCB->uxPriority )
+                {
+                    pxCurrentTCB = pxNewTCB;
+                }
+                else
+                {
+                    mtCOVERAGE_TEST_MARKER();
+                }
+            }
+            else
+            {
+                mtCOVERAGE_TEST_MARKER();
+            }
+        }
+
+        uxTaskNumber++;
+
+        #if ( configUSE_TRACE_FACILITY == 1 )
+        {
+            /* Add a counter into the TCB for tracing only. */
+            pxNewTCB->uxTCBNumber = uxTaskNumber;
+        }
+        #endif /* configUSE_TRACE_FACILITY */
+        traceTASK_CREATE( pxNewTCB );
+
+        prvAddTaskByDeadlineToReadyList( pxNewTCB );
+
+        portSETUP_TCB( pxNewTCB );
+    }
+    taskEXIT_CRITICAL();
+
+    if( xSchedulerRunning != pdFALSE )
+    {
+        /* If the created task is of a higher priority than the current task
+         * then it should run now. */
+        if( pxCurrentTCB->uxPriority < pxNewTCB->uxPriority )
+        {
+            taskYIELD_IF_USING_PREEMPTION();
+        }
+        else
+        {
+            mtCOVERAGE_TEST_MARKER();
+        }
+    }
+    else
+    {
+        mtCOVERAGE_TEST_MARKER();
+    }
+}
+#endif //(configUSE_POLLING_SERVER == 1 && INCLUDE_xTaskCreateAperiodic == 1)
 /*-----------------------------------------------------------*/
 
 #if ( INCLUDE_vTaskDelete == 1 )
@@ -5427,3 +5533,174 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
     #endif
 
 #endif /* if ( configINCLUDE_FREERTOS_TASK_C_ADDITIONS_H == 1 ) */
+
+#if ( (INCLUDE_xTaskCreateAperiodic == 1) && (configUSE_POLLING_SERVER == 1))
+    #if ( configSUPPORT_STATIC_ALLOCATION == 1 )
+
+        TaskHandle_t xTaskCreateAperiodicStatic( TaskFunction_t pxTaskCode,
+                                        const char * const pcName, /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
+                                        const uint32_t ulStackDepth,
+                                        void * const pvParameters,
+                                        UBaseType_t uxPriority,
+                                        UBaseType_t uxDuration,
+                                        UBaseType_t uxDeadline,
+                                        StackType_t * const puxStackBuffer,
+                                        StaticTask_t * const pxTaskBuffer )
+        {
+            TCB_t * pxNewTCB;
+            TaskHandle_t xReturn;
+
+            configASSERT( puxStackBuffer != NULL );
+            configASSERT( pxTaskBuffer != NULL );
+
+            #if ( configASSERT_DEFINED == 1 )
+            {
+                /* Sanity check that the size of the structure used to declare a
+                 * variable of type StaticTask_t equals the size of the real task
+                 * structure. */
+                volatile size_t xSize = sizeof( StaticTask_t );
+                configASSERT( xSize == sizeof( TCB_t ) );
+                ( void ) xSize; /* Prevent lint warning when configASSERT() is not used. */
+            }
+            #endif /* configASSERT_DEFINED */
+
+            if( ( pxTaskBuffer != NULL ) && ( puxStackBuffer != NULL ) )
+            {
+                /* The memory used for the task's TCB and stack are passed into this
+                 * function - use them. */
+                pxNewTCB = ( TCB_t * ) pxTaskBuffer; /*lint !e740 !e9087 Unusual cast is ok as the structures are designed to have the same alignment, and the size is checked by an assert. */
+                memset( ( void * ) pxNewTCB, 0x00, sizeof( TCB_t ) );
+                pxNewTCB->pxStack = ( StackType_t * ) puxStackBuffer;
+
+                #if ( tskSTATIC_AND_DYNAMIC_ALLOCATION_POSSIBLE != 0 ) /*lint !e731 !e9029 Macro has been consolidated for readability reasons. */
+                {
+                    /* Tasks can be created statically or dynamically, so note this
+                     * task was created statically in case the task is later deleted. */
+                    pxNewTCB->ucStaticallyAllocated = tskSTATICALLY_ALLOCATED_STACK_AND_TCB;
+                }
+                #endif /* tskSTATIC_AND_DYNAMIC_ALLOCATION_POSSIBLE */
+
+                prvInitialiseNewTask( pxTaskCode, pcName, ulStackDepth, pvParameters, uxPriority, &xReturn, pxNewTCB, NULL );
+                // Assign the missing values to the TCB instead of creating a new function
+                pxNewTCB->uxDuration = uxDuration;
+                pxNewTCB->uxDeadline = uxDeadline;
+                pxNewTCB->uxPeriod = portMAX_DELAY;
+
+                listSET_LIST_ITEM_VALUE( &( pxNewTCB->xStateListItem ), pxNewTCB->uxDeadline );
+                prvAddNewTaskByDeadlineToReadyList( pxNewTCB );
+            }
+            else
+            {
+                xReturn = NULL;
+            }
+
+            return xReturn;
+        }
+
+    #endif /* SUPPORT_STATIC_ALLOCATION */
+    #if ( configSUPPORT_DYNAMIC_ALLOCATION == 1 )
+
+        BaseType_t xTaskCreateAperiodic( TaskFunction_t pxTaskCode,
+                                const char * const pcName, /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
+                                const configSTACK_DEPTH_TYPE usStackDepth,
+                                void * const pvParameters,
+                                UBaseType_t uxPriority,
+                                UBaseType_t uxDuration,
+                                UBaseType_t uxDeadline,
+                                TaskHandle_t * const pxCreatedTask )
+        {
+            TCB_t * pxNewTCB;
+            BaseType_t xReturn;
+
+            /* If the stack grows down then allocate the stack then the TCB so the stack
+             * does not grow into the TCB.  Likewise if the stack grows up then allocate
+             * the TCB then the stack. */
+            #if ( portSTACK_GROWTH > 0 )
+            {
+                /* Allocate space for the TCB.  Where the memory comes from depends on
+                 * the implementation of the port malloc function and whether or not static
+                 * allocation is being used. */
+                pxNewTCB = ( TCB_t * ) pvPortMalloc( sizeof( TCB_t ) );
+
+                if( pxNewTCB != NULL )
+                {
+                    memset( ( void * ) pxNewTCB, 0x00, sizeof( TCB_t ) );
+
+                    /* Allocate space for the stack used by the task being created.
+                     * The base of the stack memory stored in the TCB so the task can
+                     * be deleted later if required. */
+                    pxNewTCB->pxStack = ( StackType_t * ) pvPortMallocStack( ( ( ( size_t ) usStackDepth ) * sizeof( StackType_t ) ) ); /*lint !e961 MISRA exception as the casts are only redundant for some ports. */
+
+                    if( pxNewTCB->pxStack == NULL )
+                    {
+                        /* Could not allocate the stack.  Delete the allocated TCB. */
+                        vPortFree( pxNewTCB );
+                        pxNewTCB = NULL;
+                    }
+                }
+            }
+            #else /* portSTACK_GROWTH */
+            {
+                StackType_t * pxStack;
+
+                /* Allocate space for the stack used by the task being created. */
+                pxStack = pvPortMallocStack( ( ( ( size_t ) usStackDepth ) * sizeof( StackType_t ) ) ); /*lint !e9079 All values returned by pvPortMalloc() have at least the alignment required by the MCU's stack and this allocation is the stack. */
+
+                if( pxStack != NULL )
+                {
+                    /* Allocate space for the TCB. */
+                    pxNewTCB = ( TCB_t * ) pvPortMalloc( sizeof( TCB_t ) ); /*lint !e9087 !e9079 All values returned by pvPortMalloc() have at least the alignment required by the MCU's stack, and the first member of TCB_t is always a pointer to the task's stack. */
+
+                    if( pxNewTCB != NULL )
+                    {
+                        memset( ( void * ) pxNewTCB, 0x00, sizeof( TCB_t ) );
+
+                        /* Store the stack location in the TCB. */
+                        pxNewTCB->pxStack = pxStack;
+                    }
+                    else
+                    {
+                        /* The stack cannot be used as the TCB was not created.  Free
+                         * it again. */
+                        vPortFreeStack( pxStack );
+                    }
+                }
+                else
+                {
+                    pxNewTCB = NULL;
+                }
+            }
+            #endif /* portSTACK_GROWTH */
+
+            if( pxNewTCB != NULL )
+            {
+                #if ( tskSTATIC_AND_DYNAMIC_ALLOCATION_POSSIBLE != 0 ) /*lint !e9029 !e731 Macro has been consolidated for readability reasons. */
+                {
+                    /* Tasks can be created statically or dynamically, so note this
+                     * task was created dynamically in case it is later deleted. */
+                    pxNewTCB->ucStaticallyAllocated = tskDYNAMICALLY_ALLOCATED_STACK_AND_TCB;
+                }
+                #endif /* tskSTATIC_AND_DYNAMIC_ALLOCATION_POSSIBLE */
+
+                prvInitialiseNewTask( pxTaskCode, pcName, ( uint32_t ) usStackDepth, pvParameters, uxPriority, pxCreatedTask, pxNewTCB, NULL );
+                pxNewTCB->uxDuration = uxDuration;
+                pxNewTCB->uxDeadline = uxDeadline;
+                pxNewTCB->uxPeriod = portMAX_DELAY;
+
+                listSET_LIST_ITEM_VALUE( &( pxNewTCB->xStateListItem ), pxNewTCB->uxDeadline );
+                prvAddNewTaskByDeadlineToReadyList( pxNewTCB );
+                xReturn = pdPASS;
+            }
+            else
+            {
+                xReturn = errCOULD_NOT_ALLOCATE_REQUIRED_MEMORY;
+            }
+
+            return xReturn;
+        }
+
+    #endif /* configSUPPORT_DYNAMIC_ALLOCATION */
+#endif
+
+#if (INCLUDE_vTaskStartPollingServer == 1)
+#endif
