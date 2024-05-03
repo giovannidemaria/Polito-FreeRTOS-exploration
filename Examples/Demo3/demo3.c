@@ -14,7 +14,6 @@ but the same code, could be written for an undefined number of repetition of pri
 /* Kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "timers.h"
 
 #define DIM 4
 
@@ -23,24 +22,26 @@ typedef struct s_mat{
     int vB[DIM];            //Column of matrix B
     int result;
     int x;              //Dimension
-}t_mat;
+} t_mat;
 
-void vTask(void *p) {
+int A[DIM][DIM];
+int B[DIM][DIM];
+int C[DIM][DIM];
+
+void vTaskProduct(void *p) {
     t_mat *pn = (t_mat *)p;
 
     for(int i = 0; i < pn->x; i++)
         pn->result += pn->vA[i] * pn->vB[i];
 }
 
-void vTaskPrint(void *matrix) {
+void vTaskPrint() {
     int i, j;
-
-    int **a = (int (*)[4])matrix;
 
     printf("\n");
     for(i=0; i < DIM; i++){
         for(j=0; j < DIM; j++){
-            printf("%d ", a[i][j]);
+            printf("%d ", C[i][j]);
         }
         printf("\n");
     }
@@ -54,17 +55,26 @@ void copyOnVett(int M[DIM][DIM], int dim, int *v, int option){
     }
     else{
         for(int i = 0; i < DIM; i++){
-            v[i] = M[DIM][dim];
+            v[i] = M[i][dim];
         }
     }
 }
 
+void vTaskWrapper(void *p) {
+    t_mat *data = (t_mat *)p; 
+    for(int i = 0; i < DIM; i++){
+        copyOnVett(A, i, data->vA, 0);
+        for(int j = 0; j < DIM; j++){
+            data->result = 0;
+            copyOnVett(B, j, data->vB, 1);
+            xTaskCreate(vTaskProduct, "Product", configMINIMAL_STACK_SIZE, (void *)&data, tskIDLE_PRIORITY + 1, NULL);
+            C[i][j] = data->result;
+        }
+    }
+    xTaskCreate(vTaskPrint, "Print", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL); 
+}
 
 void demo3() {
-    int A[DIM][DIM];
-    int B[DIM][DIM];
-    int C[DIM][DIM];
-
     t_mat data;
 
     //Populate matrix
@@ -80,17 +90,7 @@ void demo3() {
         }
     }
 
-    for(int i = 0; i < DIM; i++){
-        copyOnVett(A, i, data.vA, 0);
-        for(int j = 0; j < DIM; j++){
-            data.result = 0;
-            copyOnVett(B, j, data.vB, 1);
-            xTaskCreate(vTask, "Product", configMINIMAL_STACK_SIZE, (void *)&data, tskIDLE_PRIORITY + 1, NULL);
-            C[i][j] = data.result;
-        }
-    }
-
-    xTaskCreate(vTaskPrint, "Print", configMINIMAL_STACK_SIZE, (void *)C, tskIDLE_PRIORITY, NULL);
+    xTaskCreate(vTaskWrapper, "Wrapper", configMINIMAL_STACK_SIZE, (void *)&data, tskIDLE_PRIORITY, NULL);
 
     /* Starting FreeRTOS scheduler */
     vTaskStartScheduler();
