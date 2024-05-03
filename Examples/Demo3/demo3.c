@@ -27,6 +27,7 @@ typedef struct s_mat{
 int A[DIM][DIM];
 int B[DIM][DIM];
 int C[DIM][DIM];
+int flag = 0;
 
 void vTaskProduct(void *p) {
     t_mat *pn = (t_mat *)p;
@@ -38,40 +39,28 @@ void vTaskProduct(void *p) {
 void vTaskPrint() {
     int i, j;
 
-    printf("\n");
-    for(i=0; i < DIM; i++){
-        for(j=0; j < DIM; j++){
-            printf("%d ", C[i][j]);
-        }
+    if (flag == 1) {
         printf("\n");
+        for(i=0; i < DIM; i++){
+            for(j=0; j < DIM; j++){
+                printf("%d ", C[i][j]);
+            }
+            printf("\n");
+        }
     }
 }
 
-void copyOnVett(int M[DIM][DIM], int dim, int *v, int option){
+void copyOnVett(int dim, int *v, int option){
     if(option == 0){
         for(int i = 0; i < DIM; i++){
-            v[i] = M[dim][i];
+            v[i] = A[dim][i];
         }
     }
     else{
         for(int i = 0; i < DIM; i++){
-            v[i] = M[i][dim];
+            v[i] = B[i][dim];
         }
     }
-}
-
-void vTaskWrapper(void *p) {
-    t_mat *data = (t_mat *)p; 
-    for(int i = 0; i < DIM; i++){
-        copyOnVett(A, i, data->vA, 0);
-        for(int j = 0; j < DIM; j++){
-            data->result = 0;
-            copyOnVett(B, j, data->vB, 1);
-            xTaskCreate(vTaskProduct, "Product", configMINIMAL_STACK_SIZE, (void *)&data, tskIDLE_PRIORITY + 1, NULL);
-            C[i][j] = data->result;
-        }
-    }
-    xTaskCreate(vTaskPrint, "Print", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL); 
 }
 
 void demo3() {
@@ -90,8 +79,19 @@ void demo3() {
         }
     }
 
-    xTaskCreate(vTaskWrapper, "Wrapper", configMINIMAL_STACK_SIZE, (void *)&data, tskIDLE_PRIORITY, NULL);
+    for(int i = 0; i < DIM; i++){
+        copyOnVett(i, data.vA, 0);
+        for(int j = 0; j < DIM; j++){
+            data.result = 0;
+            copyOnVett(j, data.vB, 1);
+            xTaskCreate(vTaskProduct, "Product", configMINIMAL_STACK_SIZE, (void *)&data, tskIDLE_PRIORITY + 1, NULL);
+            C[i][j] = data.result;
+        }
+        flag = 1;
+    }
 
+    xTaskCreate(vTaskPrint, "Print", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2, NULL);
+    
     /* Starting FreeRTOS scheduler */
     vTaskStartScheduler();
 
