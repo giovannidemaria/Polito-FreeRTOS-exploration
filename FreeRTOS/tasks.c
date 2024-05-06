@@ -5920,7 +5920,7 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
                 pxNewTCB->uxDeadline = portMAX_DELAY;
                 pxNewTCB->uxPeriod = uxPeriod;
 
-                listSET_LIST_ITEM_VALUE( &( pxNewTCB->xStateListItem ), pxNewTCB->uxDeadline );
+                listSET_LIST_ITEM_VALUE( &( pxNewTCB->xStateListItem ), pxNewTCB->uxPeriod );
                 prvAddNewTaskToPeriodicReadyList( pxNewTCB );
             }
             else
@@ -6019,7 +6019,7 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
                 pxNewTCB->uxDeadline = portMAX_DELAY;
                 pxNewTCB->uxPeriod = uxPeriod;
 
-                listSET_LIST_ITEM_VALUE( &( pxNewTCB->xStateListItem ), pxNewTCB->uxDeadline );
+                listSET_LIST_ITEM_VALUE( &( pxNewTCB->xStateListItem ), pxNewTCB->uxPeriod );
                 prvAddNewTaskToPeriodicReadyList( pxNewTCB );
                 xReturn = pdPASS;
             }

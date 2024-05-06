@@ -368,6 +368,15 @@ typedef enum
                             TickType_t uxDeadline,
                             TaskHandle_t * const pxCreatedTask ) PRIVILEGED_FUNCTION;
 #endif
+#if ( INCLUDE_xTaskCreatePeriodic == 1 )
+    BaseType_t xTaskCreatePeriodic( TaskFunction_t pxTaskCode,
+                            const char * const pcName, /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
+                            const configSTACK_DEPTH_TYPE usStackDepth,
+                            void * const pvParameters,
+                            UBaseType_t uxPriority,
+                            TickType_t uxPeriod,
+                            TaskHandle_t * const pxCreatedTask ) PRIVILEGED_FUNCTION;
+#endif
 #endif
 
 /**
@@ -495,6 +504,16 @@ typedef enum
                                     UBaseType_t uxPriority,
                                     TickType_t uxDuration,
                                     TickType_t uxDeadline,
+                                    StackType_t * const puxStackBuffer,
+                                    StaticTask_t * const pxTaskBuffer ) PRIVILEGED_FUNCTION;
+#endif
+#if ( INCLUDE_xTaskCreatePeriodic == 1 )
+    TaskHandle_t xTaskCreatePeriodicStatic( TaskFunction_t pxTaskCode,
+                                    const char * const pcName, /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
+                                    const uint32_t ulStackDepth,
+                                    void * const pvParameters,
+                                    UBaseType_t uxPriority,
+                                    TickType_t uxPeriod,
                                     StackType_t * const puxStackBuffer,
                                     StaticTask_t * const pxTaskBuffer ) PRIVILEGED_FUNCTION;
 #endif
