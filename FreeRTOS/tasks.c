@@ -3314,7 +3314,7 @@ void vTaskSwitchContext( void )
          * optimised asm code. */
         #if ( configUSE_POLLING_SERVER ==  1 )
         {
-            if( listLIST_IS_EMPTY(xReadyPeriodicTasksLists) == pdFALSE )
+            if( listLIST_IS_EMPTY( &xReadyPeriodicTasksLists ) == pdFALSE )
             {
                 pxCurrentTCB = (TCB_t * ) listGET_OWNER_OF_HEAD_ENTRY( &(xReadyPeriodicTasksLists) );
             }
@@ -3953,8 +3953,8 @@ static void prvInitialiseTaskLists( void )
     pxOverflowDelayedTaskList = &xDelayedTaskList2;
 #if ( configUSE_POLLING_SERVER == 1 )
     {
-        vListInitialise( &xReadyPeriodicTasksLists )
-        vListInitialise( &xPendingPeriodicReadyList )
+        vListInitialise( &xReadyPeriodicTasksLists );
+        vListInitialise( &xPendingPeriodicReadyList );
     }
 #endif // ( configUSE_POLLING_SERVER == 1 )
 }
