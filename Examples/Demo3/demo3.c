@@ -2,8 +2,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#define ROW 4
-#define COL 4
+#define ROW 10
+#define COL 10
 
 //define matrix dimensions
 #define A_ROWS ROW
@@ -21,7 +21,7 @@ typedef struct {
 } t_mat;
 
 //task to perform multiplication of a row from matrix A and a column from matrix B
-void multiplyTask(void *data) {
+void vTaskProduct(void *data) {
     t_mat *params = (t_mat *)data;
     int row = params->row;
     int col = params->col;
@@ -36,7 +36,7 @@ void multiplyTask(void *data) {
 }
 
 //task to print the result matrix
-void printResultTask() {
+void vTaskPrint() {
     printf("Result Matrix:\n");
     for (int i = 0; i < A_ROWS; i++) {
         for (int j = 0; j < B_COLS; j++) {
@@ -59,7 +59,7 @@ void demo3() {
     //populate matrix B
     for (int i = 0; i < B_ROWS; i++) {
         for (int j = 0; j < B_COLS; j++) {
-            B[i][j] = 1;
+            B[i][j] = j;
         }
     }
 
@@ -69,12 +69,12 @@ void demo3() {
             t_mat *data = (t_mat *)pvPortMalloc(sizeof(t_mat));
             data->row = i;
             data->col = j;
-            xTaskCreate(multiplyTask, "MultiplyTask", configMINIMAL_STACK_SIZE, (void *)data, tskIDLE_PRIORITY + 1, NULL);
+            xTaskCreate(vTaskProduct, "product", configMINIMAL_STACK_SIZE, (void *)data, tskIDLE_PRIORITY + 1, NULL);
         }
     }
 
     //create task to print the result matrix
-    xTaskCreate(printResultTask, "PrintResultTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(vTaskPrint, "print", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
 
     //start scheduler
     vTaskStartScheduler();
