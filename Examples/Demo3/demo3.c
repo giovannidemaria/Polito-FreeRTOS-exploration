@@ -1,109 +1,82 @@
-/* In this first demo, we use a timer to create a delay between output messages.
-First, the delay is 1 second, and after each print, it is increased by 1.
-In order to make it easier, we have defined a maximum number of reperition, 
-but the same code, could be written for an undefined number of repetition of print.
-*/
-
-/* Standard includes. */
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-
-/* Kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
 
-#define DIM 4
 #define ROW 4
 #define COL 4
 
-typedef struct s_mat{
-    int vA[ROW];            //Row of matrix A
-    int vB[COL];            //Column of matrix B
-    int result;
-    int x;
-    int i;
-    int j;
+//define matrix dimensions
+#define A_ROWS ROW
+#define A_COLS COL
+#define B_ROWS ROW
+#define B_COLS ROW
+
+int A[A_ROWS][A_COLS];
+int B[B_ROWS][B_COLS];
+int C[A_ROWS][B_COLS];
+
+typedef struct {
+    int row;
+    int col;
 } t_mat;
 
-int A[ROW][COL];
-int B[COL][ROW];
-int C[ROW][ROW];
-
-void vTaskProduct(void *data) {
-    t_mat *p = (t_mat *)data;
-
-    for(int i = 0; i < p->x; i++) {
-        p->result += p->vA[i] * p->vB[i];
-        printf("%d %d\n", p->vA[i], p->vB[i]);
+//task to perform multiplication of a row from matrix A and a column from matrix B
+void multiplyTask(void *data) {
+    t_mat *params = (t_mat *)data;
+    int row = params->row;
+    int col = params->col;
+   
+    int sum = 0;
+    for (int i = 0; i < A_COLS; i++) {
+        sum += A[row][i] * B[i][col];
     }
-    C[p->i][p->j] = p->result;
+    C[row][col] = sum;
+
     vTaskDelete(NULL);
 }
 
-void vTaskPrint() {
-    int i, j;
-
-    printf("\n");
-    for(i=0; i < DIM; i++){
-        for(j=0; j < DIM; j++){
+//task to print the result matrix
+void printResultTask() {
+    printf("Result Matrix:\n");
+    for (int i = 0; i < A_ROWS; i++) {
+        for (int j = 0; j < B_COLS; j++) {
             printf("%d ", C[i][j]);
         }
         printf("\n");
     }
+
     vTaskDelete(NULL);
 }
 
-void copyOnVett(int col, int row, int *v, int option){
-    if(option == 0) {
-        for(int i = 0; i < col; i++){
-            v[i] = A[row][i];
-        }
-    }
-    else{
-        for(int i = 0; i < row; i++){
-            v[i] = B[i][col];
-        }
-    }
-}
-
 void demo3() {
-    t_mat data[ROW*ROW];
-
-    //Populate matrix
-    for(int i = 0; i < ROW; i++){
-        for(int j = 0; j < COL; j++){
+    //populate matrix A
+    for (int i = 0; i < A_ROWS; i++) {
+        for (int j = 0; j < A_COLS; j++) {
             A[i][j] = j + 1;
         }
     }
 
-    for(int i = 0; i < COL; i++){
-        for(int j = 0; j < ROW; j++){
-            B[i][j] = j;
+    //populate matrix B
+    for (int i = 0; i < B_ROWS; i++) {
+        for (int j = 0; j < B_COLS; j++) {
+            B[i][j] = 1;
         }
     }
 
-    for (int i = 0; i < ROW*ROW; i++)
-        data[i].x = COL;
-    int c = 0;
-
-    for(int i = 0; i < ROW; i++){
-        copyOnVett(data[c].x, i, data[c].vA, 0);
-        for(int j = 0; j < COL; j++){
-            copyOnVett(j, data[c].x, data[c].vB, 1);
-            data[c].result = 0;
-            data[c].i = i;
-            data[c].j = j; 
-            xTaskCreate(vTaskProduct, "Product", configMINIMAL_STACK_SIZE, (void *)&data[c], configMAX_PRIORITIES - 1, NULL);
-            c++;
+    //create tasks for each row of matrix A
+    for (int i = 0; i < A_ROWS; i++) {
+        for (int j = 0; j < B_COLS; j++) {
+            t_mat *data = (t_mat *)pvPortMalloc(sizeof(t_mat));
+            data->row = i;
+            data->col = j;
+            xTaskCreate(multiplyTask, "MultiplyTask", configMINIMAL_STACK_SIZE, (void *)data, tskIDLE_PRIORITY + 1, NULL);
         }
     }
 
-    xTaskCreate(vTaskPrint, "Print", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, NULL);
-    
-    /* Starting FreeRTOS scheduler */
+    //create task to print the result matrix
+    xTaskCreate(printResultTask, "PrintResultTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+
+    //start scheduler
     vTaskStartScheduler();
 
     for(;;);
