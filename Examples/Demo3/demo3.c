@@ -1,3 +1,10 @@
+/*
+    This demo perform the multiplication between two matrices
+    of predefined dimensions. Each multiplication between
+    row and column, is assigned to a task and it inserts the
+    result in the correct cell of the result matrix.
+*/
+
 #include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
@@ -5,7 +12,7 @@
 #define ROW 10
 #define COL 10
 
-//define matrix dimensions
+/* Define matrix dimensions */
 #define A_ROWS ROW
 #define A_COLS COL
 #define B_ROWS ROW
@@ -20,7 +27,7 @@ typedef struct {
     int col;
 } t_mat;
 
-//task to perform multiplication of a row from matrix A and a column from matrix B
+/* Task to perform multiplication of a row from matrix A and a column from matrix B */
 void vTaskProduct(void *data) {
     t_mat *params = (t_mat *)data;
     int row = params->row;
@@ -35,7 +42,7 @@ void vTaskProduct(void *data) {
     vTaskDelete(NULL);
 }
 
-//task to print the result matrix
+/* Task to print the result matrix */
 void vTaskPrint() {
     printf("Result Matrix:\n");
     for (int i = 0; i < A_ROWS; i++) {
@@ -49,21 +56,21 @@ void vTaskPrint() {
 }
 
 void demo3() {
-    //populate matrix A
+    /* Populate matrix A */
     for (int i = 0; i < A_ROWS; i++) {
         for (int j = 0; j < A_COLS; j++) {
             A[i][j] = j + 1;
         }
     }
 
-    //populate matrix B
+    /* Populate matrix B */
     for (int i = 0; i < B_ROWS; i++) {
         for (int j = 0; j < B_COLS; j++) {
             B[i][j] = j;
         }
     }
 
-    //create tasks for each row of matrix A
+    /* Create tasks for each row of matrix A */
     for (int i = 0; i < A_ROWS; i++) {
         for (int j = 0; j < B_COLS; j++) {
             t_mat *data = (t_mat *)pvPortMalloc(sizeof(t_mat));
@@ -73,10 +80,10 @@ void demo3() {
         }
     }
 
-    //create task to print the result matrix
+    /* Create task to print the result matrix */
     xTaskCreate(vTaskPrint, "print", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
 
-    //start scheduler
+    /* Starting FreeRTOS scheduler */
     vTaskStartScheduler();
 
     for(;;);

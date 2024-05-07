@@ -26,10 +26,9 @@ int demo2(void){
     xTaskCreate(SimpleCounter, "Task1", configMINIMAL_STACK_SIZE, NULL, 1, &Task1Handle);
     xTaskCreate(Task2, "Task2", configMINIMAL_STACK_SIZE, NULL, 1, &Task2Handle);
 
-    /* Start the scheduler */
+    /* Starting FreeRTOS scheduler */
     vTaskStartScheduler();
 
-    /* Infinite loop */
     for(;;);
 
     return 0;
@@ -48,13 +47,11 @@ void SimpleCounter(){
 }
 
 void Task2(){
-
     while(1){
         /* Wait for a period to gather sufficient runtime statistics */
         vTaskDelay(pdMS_TO_TICKS(5000));
 
         size_t freeHeapSize = xPortGetFreeHeapSize();
         printf("Free heap size: %u bytes\n", freeHeapSize);
-
     }
 }
