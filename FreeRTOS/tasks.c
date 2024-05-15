@@ -152,6 +152,25 @@
 
 /*-----------------------------------------------------------*/
 
+    #define taskSELECT_OLD_HIGHEST_PRIORITY_TASK()                            \
+    {                                                                         \
+        UBaseType_t uxTopPriority = uxTopReadyPriority;                       \
+                                                                              \
+        /* Find the highest priority queue that contains ready tasks. */      \
+        while( listLIST_IS_EMPTY( &( pxReadyTasksLists[ uxTopPriority ] ) ) ) \
+        {                                                                     \
+            configASSERT( uxTopPriority );                                    \
+            --uxTopPriority;                                                  \
+        }                                                                     \
+                                                                              \
+        /* listGET_OWNER_OF_HEAD_ENTRY takes the old task, so to avoid preemption \
+         * between tasks with the same priority. */                                           \
+        pxCurrentTCB = listGET_OWNER_OF_HEAD_ENTRY( &( pxReadyTasksLists[ uxTopPriority ] ) ); \
+        uxTopReadyPriority = uxTopPriority;                                                   \
+    } /* taskSELECT_HIGHEST_PRIORITY_TASK */
+
+/*-----------------------------------------------------------*/
+
 /* Define away taskRESET_READY_PRIORITY() and portRESET_READY_PRIORITY() as
  * they are only required when a port optimised method of task selection is
  * being used. */
@@ -177,6 +196,18 @@
         portGET_HIGHEST_PRIORITY( uxTopPriority, uxTopReadyPriority );                          \
         configASSERT( listCURRENT_LIST_LENGTH( &( pxReadyTasksLists[ uxTopPriority ] ) ) > 0 ); \
         listGET_OWNER_OF_NEXT_ENTRY( pxCurrentTCB, &( pxReadyTasksLists[ uxTopPriority ] ) );   \
+    } /* taskSELECT_HIGHEST_PRIORITY_TASK() */
+
+/*-----------------------------------------------------------*/
+
+    #define taskSELECT_OLD_HIGHEST_PRIORITY_TASK()                                                  \
+    {                                                                                           \
+        UBaseType_t uxTopPriority;                                                              \
+                                                                                                \
+        /* Find the highest priority list that contains ready tasks. */                         \
+        portGET_HIGHEST_PRIORITY( uxTopPriority, uxTopReadyPriority );                          \
+        configASSERT( listCURRENT_LIST_LENGTH( &( pxReadyTasksLists[ uxTopPriority ] ) ) > 0 ); \
+        pxCurrentTCB = listGET_OWNER_OF_HEAD_ENTRY( &( pxReadyTasksLists[ uxTopPriority ] ) );   \
     } /* taskSELECT_HIGHEST_PRIORITY_TASK() */
 
 /*-----------------------------------------------------------*/
@@ -2414,7 +2445,24 @@ BaseType_t xTaskResumeAll( void )
                     listREMOVE_ITEM( &( pxTCB->xEventListItem ) );
                     portMEMORY_BARRIER();
                     listREMOVE_ITEM( &( pxTCB->xStateListItem ) );
-                    prvAddTaskToReadyList( pxTCB );
+                    #if ( configUSE_POLLING_SERVER == 1 )
+                    {
+                        if( pxTCB->uxDeadline == portMAX_DELAY && pxTCB->uxPeriod != portMAX_DELAY )
+                        {
+                            prvAddTaskToPeriodicReadyList( pxTCB );
+                        }
+                        else if( pxTCB->uxPeriod == portMAX_DELAY && pxTCB->uxDeadline != portMAX_DELAY )
+                        {
+                            prvAddTaskByDeadlineToReadyList( pxTCB );
+                        }
+                        else
+                        {
+                            prvAddTaskToReadyList( pxTCB );
+                        }
+                    }
+                    #else // ( configUSE_POLLING_SERVER == 1 )
+                        prvAddTaskToReadyList( pxTCB );
+                    #endif // ( configUSE_POLLING_SERVER == 1 )
 
                     /* If the moved task has a priority higher than or equal to
                      * the current task then a yield must be performed. */
@@ -3091,6 +3139,7 @@ BaseType_t xTaskIncrementTick( void )
          * writer has not explicitly turned time slicing off. */
         #if ( ( configUSE_PREEMPTION == 1 ) && ( configUSE_TIME_SLICING == 1 ) )
         {
+            #if ( configUSE_POLLING_SERVER != 1 )
             if( listCURRENT_LIST_LENGTH( &( pxReadyTasksLists[ pxCurrentTCB->uxPriority ] ) ) > ( UBaseType_t ) 1 )
             {
                 xSwitchRequired = pdTRUE;
@@ -3099,6 +3148,9 @@ BaseType_t xTaskIncrementTick( void )
             {
                 mtCOVERAGE_TEST_MARKER();
             }
+            #else
+                mtCOVERAGE_TEST_MARKER();
+            #endif
         }
         #endif /* ( ( configUSE_PREEMPTION == 1 ) && ( configUSE_TIME_SLICING == 1 ) ) */
 
@@ -3320,7 +3372,11 @@ void vTaskSwitchContext( void )
             }
             else
             {
-                taskSELECT_HIGHEST_PRIORITY_TASK(); /*lint !e9079 void * is used as this macro is used with timers and co-routines too.  Alignment is known to be fine as the type of the pointer stored and retrieved is the same. */
+                #if ( configUSE_APERIODIC_PREEMPTION == 1 )
+                    taskSELECT_HIGHEST_PRIORITY_TASK(); /*lint !e9079 void * is used as this macro is used with timers and co-routines too.  Alignment is known to be fine as the type of the pointer stored and retrieved is the same. */
+                #else // ( configUSE_APERIODIC_PREEMPTION == 1 )
+                    taskSELECT_OLD_HIGHEST_PRIORITY_TASK(); /*lint !e9079 void * is used as this macro is used with timers and co-routines too.  Alignment is known to be fine as the type of the pointer stored and retrieved is the same. */
+                #endif // ( configUSE_APERIODIC_PREEMPTION == 1 )
             }
         }
         #else
