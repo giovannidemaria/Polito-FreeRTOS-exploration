@@ -11,10 +11,10 @@
 
 typedef struct {
     int patientCode;            // Unique identifier for the patient
-    int arrivalTime;     // Time when the patient arrived
-    int operationDuration; // Expected duration of the operation 
-    int criticalTime;    // Time limit after which the patient's condition worsens
-    int priority;   // Could be assigned
+    int arrivalTime;            // Time when the patient arrived
+    int operationDuration;      // Expected duration of the operation 
+    int criticalTime;           // Time limit after which the patient's condition worsens
+    int priority;               // Could be assigned
 } PatientInfo_t;
 
 PatientInfo_t patients[PATIENT_NUMBER] = {
@@ -25,24 +25,21 @@ PatientInfo_t patients[PATIENT_NUMBER] = {
 };
 int ids[] = {0, 1, 2};
 
-void taskPaziente(void *pvParameter) {
+void taskPazient(void *pvParameter) {
     PatientInfo_t *patient = (PatientInfo_t *)pvParameter;
     TickType_t xStart = xTaskGetTickCount();
     TickType_t xDelay = patient->operationDuration * configTICK_RATE_HZ;
 
     if(patient->criticalTime * configTICK_RATE_HZ <= xStart) {
-        printf("    Paziente: %d e' deceduto a %d\n",patient->patientCode,xStart/configTICK_RATE_HZ);
+        printf("    Pazient: %d died at %d\n",patient->patientCode,xStart/configTICK_RATE_HZ);
         vTaskDelete(NULL);
     }
 
-    printf("    Paziente: %d Inizio operazione:%d\n",patient->patientCode,xStart/configTICK_RATE_HZ);
-    // Ciclo di attesa attiva
-    while((xTaskGetTickCount() - xStart) < xDelay) {
-        // Questo ciclo non fa nulla se non aspettare che passino secondi
-    }
+    printf("    Pazient: %d Starting operation at:%d\n",patient->patientCode,xStart/configTICK_RATE_HZ);
+    // Busy wating cycle
+    while((xTaskGetTickCount() - xStart) < xDelay) {}
 
-    printf("    Paziente: %d Fine operazione:%d\n",patient->patientCode,xTaskGetTickCount()/configTICK_RATE_HZ);    
-    // Una volta completato, invia una notifica allo scheduler
+    printf("    Pazient: %d Ending operation:%d\n",patient->patientCode,xTaskGetTickCount()/configTICK_RATE_HZ);    
     vTaskDelete(NULL);
 }
 
@@ -62,7 +59,7 @@ void taskArrival(void *pvParameter) {
             }
             printf("Patient %d arrived at time %d\n", patients[index].patientCode, xLastWakeTime/configTICK_RATE_HZ);
             #if ( configUSE_POLLING_SERVER == 1 )
-            xTaskCreateAperiodic( taskPaziente,
+            xTaskCreateAperiodic( taskPazient,
                                 "Patient Task",
                                 (( unsigned short) 100),
                                 (void *) &patients[index],
@@ -71,7 +68,7 @@ void taskArrival(void *pvParameter) {
                                 patients[index].criticalTime * configTICK_RATE_HZ,
                                 &xTaskHandle);
             #else // ( configUSE_POLLING_SERVER == 1)
-                xTaskCreate(taskPaziente,
+                xTaskCreate(taskPazient,
                         "Patient Task",
                         (( unsigned short ) 100 ),
                         &patients[index],
