@@ -1301,6 +1301,12 @@ typedef struct xSTATIC_TCB
     #if ( configUSE_POSIX_ERRNO == 1 )
         int iDummy22;
     #endif
+
+    #if ( configUSE_POLLING_SERVER == 1 )
+        UBaseType_t uxDummy23;
+        TickType_t uxDummy24;
+        TickType_t uxDummy25;
+    #endif
 } StaticTask_t;
 
 /*
