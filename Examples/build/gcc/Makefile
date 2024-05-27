@@ -3,7 +3,7 @@ IMAGE := RTOSDemo.out
 SUB_MAKEFILE_DIR = ./library-makefiles
 
 # The directory that contains the /source and /demo sub directories.
-FREERTOS_ROOT = ./../../../../
+FREERTOS_ROOT = ./../../../
 
 CC = arm-none-eabi-gcc
 LD = arm-none-eabi-gcc
