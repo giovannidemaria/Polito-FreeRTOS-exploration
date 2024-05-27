@@ -1,13 +1,12 @@
 # Group 9 -- CAOS Project 2023-24
 Repository for the group project of CA&amp;OS
 
-```bash
 PolitoCAOSProject
 |> [Documentation](https://github.com/giovannidemaria/PolitoCAOSProject/tree/main/Documentation)
   |> PPP
   |> Report.pdf
   |> Report.tex
-|> Example
+|> [Examples](https://github.com/giovannidemaria/PolitoCAOSProject/tree/main/Examples)
   |> demo0.c
   |> demo1.c
   |> demo2.c
@@ -15,4 +14,4 @@ PolitoCAOSProject
   |> demo4.c
   |> demo5.c
   |> demoScheduler.c
-|> FreeRTOS
+|> [FreeRTOS](https://github.com/giovannidemaria/PolitoCAOSProject/tree/main/FreeRTOS)
