@@ -3,8 +3,16 @@ Repository for the group project of CA&amp;OS
 
 ```bash
 PolitoCAOSProject
-|> App
+|> Documentation
+  |> PPP
+  |> Report.pdf
+  |> Report.tex
 |> Example
+  |> demo0.c
+  |> demo1.c
+  |> demo2.c
+  |> demo3.c
+  |> demo4.c
+  |> demo5.c
+  |> demoScheduler.c
 |> FreeRTOS
-|> Img
-```
