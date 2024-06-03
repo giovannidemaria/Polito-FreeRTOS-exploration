@@ -15,7 +15,7 @@
 #define RUNTIME_STATS_BUFFER_SIZE  1024
 
 /* Task handles */
-TaskHandle_t Task1Handle, Task2Handle;
+TaskHandle_t Task1Handle, Task2Handle, TaskEmptyHandle;
 
 /* Task function prototypes */
 void SimpleCounter();
@@ -46,6 +46,11 @@ void SimpleCounter(){
     }
 }
 
+void TaskEmpty() {
+    vTaskDelay(pdMS_TO_TICKS(10000));
+    vTaskDelete(NULL);
+}
+
 void Task2(){
     while(1){
         /* Wait for a period to gather sufficient runtime statistics */
@@ -53,5 +58,6 @@ void Task2(){
 
         size_t freeHeapSize = xPortGetFreeHeapSize();
         printf("Free heap size: %u bytes\n", freeHeapSize);
+        xTaskCreate(TaskEmpty, "TaskEmpty", configMINIMAL_STACK_SIZE, NULL, 1, &TaskEmptyHandle);
     }
 }
