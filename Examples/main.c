@@ -117,6 +117,8 @@ void main( void )
 		// demoTimer();
 		// demoSemaphores();
 		// demoStats();
+		// demo3();
+		// demo4();
 		demoMatrix();
 	}
 	#else
