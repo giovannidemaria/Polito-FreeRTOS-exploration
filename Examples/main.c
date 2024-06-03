@@ -85,6 +85,8 @@ extern void demoTimer( void );
 extern void demoSemaphores( void );
 extern void demoStats( void );
 extern void demoMatrix( void );
+extern void demo3( void );
+extern void demo4( void );
 
 /*
  * Only the comprehensive demo uses application hook (callback) functions.  See
