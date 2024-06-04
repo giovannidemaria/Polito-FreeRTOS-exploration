@@ -189,7 +189,7 @@ void salaOperatoriaTask(void *pvParameters) {
 */
 
 
-int demo3( void ) {
+int demoHospital( void ) {
     QueueHandle_t redQueue = xQueueCreate(PATIENT, sizeof(int));
     QueueHandle_t greenQueue = xQueueCreate(PATIENT, sizeof(int));
 

@@ -135,7 +135,7 @@ void taskScheduler(void *pvParameter){
     }
 }
 
-int demo4(){
+int demoHospital2(){
 
     // Creating the taskScheduler with the highest priority
     xTaskCreate(taskScheduler, "Scheduler", ( ( unsigned short ) 1000 ), NULL, configMAX_PRIORITIES - 1, &xSchedulerTaskHandle);

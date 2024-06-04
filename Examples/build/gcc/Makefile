@@ -82,8 +82,8 @@ SOURCE_FILES += $(DEMO_PROJECT)/demoTimer.c
 SOURCE_FILES += $(DEMO_PROJECT)/demoSemaphores.c
 SOURCE_FILES += $(DEMO_PROJECT)/demoStats.c
 SOURCE_FILES += $(DEMO_PROJECT)/demoMatrix.c
-SOURCE_FILES += $(DEMO_PROJECT)/demo3.c
-SOURCE_FILES += $(DEMO_PROJECT)/demo4.c
+SOURCE_FILES += $(DEMO_PROJECT)/demoHospital.c
+SOURCE_FILES += $(DEMO_PROJECT)/demoHospital2.c
 SOURCE_FILES += ./startup_gcc.c
 # Lightweight print formatting to use in place of the heavier GCC equivalent.
 SOURCE_FILES += ./printf-stdarg.c
