@@ -3,17 +3,17 @@ Repository for the group project of CA&amp;OS
 
 Structure of the Repository
 - **Documentation**
-  - HaclOSsim - Group09.pptx
-  - HaclOSsim - Group09.pdf
-  - Report.pdf
-  - Report.tex
+  - _HaclOSsim - Group09.pptx_
+  - _HaclOSsim - Group09.pdf_
+  - _Report.pdf_
+  - _Report.tex_
 - **Examples**
-  - demoTimer.c
-  - demoSemaphores.c
-  - demoStats.c
-  - demoHospital.c
-  - demoHospital2.c
-  - demoMatrix.c
+  - _demoTimer.c_
+  - _demoSemaphores.c_
+  - _demoStats.c_
+  - _demoHospital.c_
+  - _demoHospital2.c_
+  - _demoMatrix.c_
   - **DemoScheduler**
-    - demoScheduler.c
+    - _demoScheduler.c_
 - **FreeRTOS**
