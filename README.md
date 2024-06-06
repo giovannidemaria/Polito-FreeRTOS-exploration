@@ -1,4 +1,4 @@
-# Group 9 - CAOS Project 2023-24
+# GROUP 09 - CAOS PROJECT 2023-24
 Repository for the group project: HaclOSsim - Computer Architectures and Operating Systems
 
 ## Structure of the Repository
