@@ -17,9 +17,7 @@ Repository for the group project: HaclOSsim - Computer Architectures and Operati
   - **DemoScheduler**
     - _demoScheduler.c_
 - **FreeRTOS**
-
-[MacOS Users section](#macos-users-2)
-
+  
 ## Installation and usage of the repository
 - ## QEMU Installation<br>
   - ### Windows Users<br>
