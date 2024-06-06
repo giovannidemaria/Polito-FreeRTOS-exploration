@@ -59,6 +59,6 @@ Repository for the group project: HaclOSsim - Computer Architectures and Operati
     Subsequently, you will be able to run, with Visual Studio Code, the file main.c which is reachable in this path FreeRTOSv202212.01\FreeRTOS\ \<Folder Name\> \CORTEX_MPS2_QEMU_IAR_GCC\ and, if you followed carefully all the steps, you will find a .out file called “RTOSDemo.out” with this path FreeRTOSv202212.01\FreeRTOS\ \<Folder Name\> \CORTEX_MPS2_QEMU_IAR_GCC\build\gcc\output\.<br>
     Note that \<Folder Name\> in the filesystem is one of the three folders _Examples_, _Examples\DemoScheduler_, or _FreeRTOS_.
   - ### MacOS Users
-    Go to FreeRTOSv202212.01/FreeRTOS/\<Folder Name\>/CORTEX_MPS2_QEMU_IAR_GCC/ and from the terminal digit the command _`make`_. When the running will finish and the system will return the terminal, you will be able to run the demo.
+    Go to FreeRTOSv202212.01/FreeRTOS/\<Folder Name\>/CORTEX_MPS2_QEMU_IAR_GCC/build/gcc and from the terminal digit the command _`make`_. When the running will finish and the system will return the terminal, you will be able to run the demo.
   - ### Linux Users
     The actions to perform are the same as in the MacOS Users section.
