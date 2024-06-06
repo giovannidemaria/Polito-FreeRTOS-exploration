@@ -29,12 +29,15 @@
  * See https://www.freertos.org/freertos-on-qemu-mps2-an385-model.html for
  * instructions.
  *
- * This project provides two demo applications.  A simple blinky style project,
- * and a more comprehensive test and demo application.  The
- * mainCREATE_SIMPLE_BLINKY_DEMO_ONLY constant, defined in this file, is used to
- * select between the two.  The simply blinky demo is implemented and described
- * in main_blinky.c.  The more comprehensive test and demo application is
- * implemented and described in main_full.c.
+ * This project provides eight demo applications:
+ * 1. A simple blinky style project implemented in main_blinky.c.
+ * 2. A more comprehensive test and demo application implemented and described in main_full.c.
+ * 3. A demo showcasing the timers implemented in demoTimer.c.
+ * 4. A demo showcasing the semaphores implemented in demoSemaphores.c.
+ * 5. A demo showing how the stats are modified implemented in demoStats.c.
+ * 6. A demo implementing a concurrent matrix multiplication in demoMatrix.c.
+ * 7. A demo simulating a patient management system implemented in demoHospital.c.
+ * 8. A second version of the previous demo using a different approuch implemente in demoHospital2.c.
  *
  * This file implements the code that is not demo specific, including the
  * hardware setup and FreeRTOS hook functions.
@@ -54,17 +57,17 @@
 #include <stdio.h>
 #include <string.h>
 
-/* This project provides two demo applications.  A simple blinky style demo
-application, and a more comprehensive test and demo application.  The
-mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is used to select between the two.
+#define DEMO_MAIN_FULL   0
+#define DEMO_MAIN_BLINKY 1
+#define DEMO_TIMER       2
+#define DEMO_SEMAPHORES	 3
+#define DEMO_STATS	     4
+#define DEMO_MATRIX	     5
+#define DEMO_HOSPITAL	 6
+#define DEMO_HOSPITAL2	 7
 
-If mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is 1 then the blinky demo will be built.
-The blinky demo is implemented and described in main_blinky.c.
-
-If mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is not 1 then the comprehensive test and
-demo application will be built.  The comprehensive test and demo application is
-implemented and described in main_full.c. */
-#define mainCREATE_SIMPLE_BLINKY_DEMO_ONLY	1
+/* mainSELECT_DEMO is used to select each demo, based on the value indicated above. */
+#define mainSELECT_DEMO DEMO_HOSPITAL2
 
 /* printf() output uses the UART.  These constants define the addresses of the
 required UART registers. */
@@ -76,8 +79,14 @@ required UART registers. */
 #define TX_BUFFER_MASK	( 1UL )
 
 /*
- * main_blinky() is used when mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is set to 1.
- * main_full() is used when mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is set to 0.
+ * main_blinky() is used when mainSELECT_DEMO is set to DEMO_MAIN_BLINKY.
+ * main_full() is used when mainSELECT_DEMO is set to DEMO_MAIN_FULL.
+ * demoTimer() is used when mainSELECT_DEMO is set to DEMO_TIMER.
+ * demoSemaphores() is used when mainSELECT_DEMO is set to DEMO_SEMAPHORES.
+ * demoStats() is used when mainSELECT_DEMO is set to DEMO_STATS.
+ * demoMatrix() is used when mainSELECT_DEMO is set to DEMO_MATRIX.
+ * demoHospital() is used when mainSELECT_DEMO is set to DEMO_HOSPITAL.
+ * demoHospital2() is used when mainSELECT_DEMO is set to DEMO_HOSPITAL2.
  */
 extern void main_blinky( void );
 extern void main_full( void );
@@ -112,19 +121,42 @@ void main( void )
 
 	/* The mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is described at the top
 	of this file. */
-	#if ( mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 1 )
+	#if ( mainSELECT_DEMO == DEMO_MAIN_BLINKY )
 	{
-		// demoTimer();
-		// demoSemaphores();
-		// demoStats();
-		// demoHospital();
-		// demoHospital2();
-		demoMatrix();
-	}
-	#else
-	{
+        main_blinky();
+    }
+    #elif ( mainSELECT_DEMO == DEMO_MAIN_FULL )
+    {
 		main_full();
 	}
+	#elif ( mainSELECT_DEMO == DEMO_TIMER )
+	{
+		demoTimer();
+    }
+    #elif ( mainSELECT_DEMO == DEMO_SEMAPHORES )
+    {
+		demoSemaphores();
+    }
+    #elif ( mainSELECT_DEMO == DEMO_STATS )
+    {
+		demoStats();
+    }
+    #elif ( mainSELECT_DEMO == DEMO_MATRIX )
+    {
+		demoMatrix();
+	}
+    #elif ( mainSELECT_DEMO == DEMO_HOSPITAL )
+    {
+		demoHospital();
+    }
+    #elif ( mainSELECT_DEMO == DEMO_HOSPITAL2 )
+    {
+		demoHospital2();
+    }
+    #else
+    {
+        configASSERT("Not recognised demo value\n");
+    }
 	#endif
 }
 /*-----------------------------------------------------------*/
@@ -186,13 +218,13 @@ void vApplicationTickHook( void )
 	code must not attempt to block, and only the interrupt safe FreeRTOS API
 	functions can be used (those that end in FromISR()). */
 
-	#if ( mainCREATE_SIMPLE_BLINKY_DEMO_ONLY != 1 )
+	#if ( mainSELECT_DEMO == DEMO_MAIN_FULL )
 	{
 		extern void vFullDemoTickHookFunction( void );
 
 		vFullDemoTickHookFunction();
 	}
-	#endif /* mainCREATE_SIMPLE_BLINKY_DEMO_ONLY */
+	#endif /* mainSELECT_DEMO == DEMO_MAIN_FULL */
 }
 /*-----------------------------------------------------------*/
 

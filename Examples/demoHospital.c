@@ -1,8 +1,8 @@
 /*  Demo 3
     Hospital management
     
-    The hospital has "MAX_ROOM" available per operare i pazienti
-    ogni sala opera in parallelo rispetto alle altre.
+    The hospital has "MAX_ROOM" available to operate the patients
+    with each room being working at the same time.
     
     Each patient has a colour code which identifies the priority and the aggravation time. In case
     the operation is not concluded before that time, the patient priority worsen like this:
