@@ -1,5 +1,5 @@
 # Group 9 - CAOS Project 2023-24
-Repository for the group project of CA&amp;OS
+Repository for the group project: HaclOSsim - Computer Architectures and Operating Systems
 
 ## Structure of the Repository
 - **Documentation**
@@ -54,5 +54,8 @@ Repository for the group project of CA&amp;OS
   _`sudo apt install binutils-arm-none-eabi`_<br>
 - ## Compile FreeRTOS
   To make your work easier, we recommend downloading and install Visual Studio Code.
-  Make sure that ARM GNU Toolchain and GNU Make are in environmental variables path, otherwise, you can add it manually copying the path of the tool and pasting it in this location `Start > Edit System Variable > Path`.
-  Subsequently, you will be able to run, with Visual Studio Code, the file main.c which is reachable in this path FreeRTOSv202212.01\FreeRTOS\Demo\CORTEX_MPS2_QEMU_IAR_GCC\ and, if you followed carefully all the steps, you will find a .out file called “RTOSDemo.out” with this path FreeRTOSv202212.01\FreeRTOS\Demo\CORTEX_MPS2_QEMU_IAR_GCC\build\gcc\output\.
+  - **Windows Users**<br>
+    Make sure that ARM GNU Toolchain and GNU Make are in environmental variables path, otherwise, you can add it manually copying the path of the tool and pasting it in this location `Start > Edit System Variable > Path`.
+    Subsequently, you will be able to run, with Visual Studio Code, the file main.c which is reachable in this path FreeRTOSv202212.01\FreeRTOS\Demo\CORTEX_MPS2_QEMU_IAR_GCC\ and, if you followed carefully all the steps, you will find a .out file called “RTOSDemo.out” with this path FreeRTOSv202212.01\FreeRTOS\Demo\CORTEX_MPS2_QEMU_IAR_GCC\build\gcc\output\.
+  - **MacOS Users**<br>
+  - **Linux Users**<br>
