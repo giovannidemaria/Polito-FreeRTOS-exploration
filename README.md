@@ -61,4 +61,4 @@ Repository for the group project: HaclOSsim - Computer Architectures and Operati
   - ### MacOS Users
     Go to FreeRTOSv202212.01/FreeRTOS/\<Folder Name\>/CORTEX_MPS2_QEMU_IAR_GCC/build/gcc and from the terminal digit the command _`make`_. When the running will finish and the system will return the terminal, you will be able to run the demo.
   - ### Linux Users
-    The actions to perform are the same as in the MacOS Users section.
+    The actions to perform are the same as in the [MacOS Users section](#macos-users-2).
