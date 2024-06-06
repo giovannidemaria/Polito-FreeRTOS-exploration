@@ -60,5 +60,6 @@ Repository for the group project: HaclOSsim - Computer Architectures and Operati
     Note that \<Folder Name\> in the filesystem is one of the three folders _Examples_, _Examples\DemoScheduler_, or _FreeRTOS_.
   - ### MacOS Users
     Go to FreeRTOSv202212.01/FreeRTOS/\<Folder Name\>/CORTEX_MPS2_QEMU_IAR_GCC/build/gcc and from the terminal digit the command _`make`_. When the running will finish and the system will return the terminal, you will be able to run the demo.
+    Note that \<Folder Name\> in the filesystem is one of the three folders _Examples_, _Examples/DemoScheduler_, or _FreeRTOS_.
   - ### Linux Users
     The actions to perform are the same as in the [MacOS Users section](#macos-users-2).
