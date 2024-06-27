@@ -1,6 +1,8 @@
 # GROUP 09 - CAOS PROJECT 2023-24
 Repository for the group project: HaclOSsim - Computer Architectures and Operating Systems
 
+This project aims to explore the usage of a real-time operating system, with hand-practice. The used operating system was FreeRTOS, in which we implemented some demos and added a new feature. 
+
 ## Structure of the Repository
 - **Documentation**
   - _HaclOSsim - Group09.pptx_
