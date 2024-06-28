@@ -1,0 +1,430 @@
+\documentclass[a4paper, 10pt, oneside]{article} % A4 paper size, default 11pt font size and oneside for equal margins
+\usepackage[utf8]{inputenc} % Required for inputting international characters
+\usepackage[T1]{fontenc} % Output font encoding for international characters
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{titlesec}
+\usepackage[titles]{tocloft}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{multirow}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[a4paper,top=2cm,left=1cm,right=1cm,bottom=2cm]{geometry}
+\usepackage[hashEnumerators,smartEllipses]{markdown}
+\usepackage{array}
+\usepackage{fancyhdr}
+\usepackage{framed}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{booktabs} % For better table formatting
+
+
+
+%\usepackage{draftwatermark}
+%\SetWatermarkScale{5}
+
+
+\usepackage[pdfauthor={Cagnazzo Federico, Capece Antonio, Carcagnì Andrea, de Maria Giovanni (Politecnico di Torino)}, pdftitle={Group Project - Computer architectures and operating systems}]{hyperref}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+%\SetWatermarkScale{5}
+
+\begin{document}
+
+\pagestyle{fancy}
+	\fancyhf{}
+	\fancyhead[L]{Group Project -- Computer architectures and operating systems}
+	\fancyhead[C]{}
+	\fancyhead[R]{\textit{HaclOSsim (Nr. 2)}}
+	\renewcommand{\headrulewidth}{0.4pt}
+	\fancyfoot[L]{A. Y. 2023-2024}
+	\fancyfoot[C]{\thepage}
+	\fancyfoot[R]{Capece, Cagnazzo, de Maria, Carcagnì \\ Group Nr. 09}
+	\renewcommand{\footrulewidth}{0.4pt}
+
+	\thispagestyle{empty}	
+{
+	\centering 
+	
+	\vspace*{\baselineskip} % White space at the top of the page
+	\vspace*{1cm}
+
+    \includegraphics[width=0.50\textwidth]{Logo_PoliTo_dal_2021_blu.png}
+
+	\vspace*{1cm}
+
+    \LARGE
+	\textbf{Politecnico di Torino}\\
+    Department of Control and Computer Engineering
+	\bigskip\bigskip
+	
+	\rule{\textwidth}{1.6pt}\vspace*{2pt} % Thick horizontal rule
+	
+	\vspace{0.75\baselineskip} % Whitespace above the title
+	
+	{\LARGE \textbf{Group Project -- Computer architectures and operating systems}\\
+ \medskip
+ \textbf{\textit{HaclOSsim (Nr. 2)}}} % Title
+ 
+	\Large
+	\vspace{0.75\baselineskip} % Whitespace below the title6
+	
+	\rule{\textwidth}{1.6pt}\vspace*{2pt} % Thick horizontal rule
+
+	\vspace{2\baselineskip} % Whitespace after the title block
+
+        Group Nr. 09\\
+        
+    \vspace{2cm}
+       Mat. 323386 -- Antonio Capece \\
+	\medskip
+       Mat. 328833 -- Federico Cagnazzo \\
+	\medskip
+       Mat. 331031 -- Giovanni de Maria \\
+    \medskip
+       Mat. 331618 -- Andrea Carcagnì \\
+	\vspace{3cm}
+	Accademic Year 2023-2024\\
+    
+	
+
+	}
+\newpage
+\tableofcontents
+\newpage
+
+\abstract{
+
+
+The HackOSsim project involves the exploration and enhancement of the FreeRTOS embedded operating system within the QEMU environment, an ISA simulator.
+One of the main goals of this project is to achieve proficiency in using QEMU. To facilitate this, a detailed tutorial is provided, which explains the installation and usage processes of the ISA simulator for emulating an ARM system.
+Additionally, practical examples are created to demonstrate the features of FreeRTOS. A significant achievement of this project is the implementation of a scheduler, which is crucial for managing task execution within FreeRTOS.
+
+}
+\section{Description of the software used}
+\subsection{QEMU}
+QEMU (Quick EMUlator) is an open-source emulator that allows users to run virtual machines and emulate various hardware architectures. Initially created for x86, QEMU has expanded its capabilities to include a diverse array of architectures such as ARM, MIPS, and PowerPC. It provides a flexible and powerful platform for developing, testing, and debugging software in a virtual environment.
+
+\subsection{FreeRTOS}
+FreeRTOS is a leading real-time operating system (RTOS) designed for embedded devices. It offers a versatile kernel that supports the development of software applications across various hardware platforms. The primary reason for using an RTOS is the complexity involved in managing multiple tasks in real-time environments. Embedded systems frequently need to respond to events promptly and predictably. FreeRTOS addresses these challenges by providing essential features like task scheduling, inter-task communication, and synchronization, ensuring efficient and reliable operation.
+
+\section{Usage Procedures}
+
+\subsection{Usage of FreeRTOS}
+
+In order to use FreeRTOS, the FreeRTOS source code must be used in the project. It is designed to be simple and easy to use, requiring only three source files common to all ports and one microcontroller-specific file.
+
+In the official FreeRTOS project, the files to be included are located in:
+\begin{itemize}
+    \item \texttt{FreeRTOS/Source/tasks.c}
+    \item \texttt{FreeRTOS/Source/queue.c}
+    \item \texttt{FreeRTOS/Source/list.c}
+    \item \texttt{FreeRTOS/Source/portable/[compiler]/[architecture]/port.c}
+    \item \texttt{FreeRTOS/Source/portable/MemMang/heap\_x.c}
+\end{itemize}
+
+The following header file paths must be included in the project:
+\begin{itemize}
+    \item \texttt{FreeRTOS/Source/include}
+    \item \texttt{FreeRTOS/Source/portable/[compiler]/[architecture]}
+    \item \texttt{[path to FreeRTOSConfig.h]}
+\end{itemize}
+
+Each project must include a \texttt{FreeRTOSConfig.h} file to configure the RTOS according to the specific needs of the application.
+
+\subsection{Usage of QEMU}
+
+The following commands are used to compile FreeRTOS and then run QEMU:
+\begin{lstlisting}[language=bash]
+make --directory=./build/gcc
+qemu-system-arm -machine mps2-an385 -cpu cortex-m3 -kernel ./build/gcc/output/RTOSDemo.out -monitor none -nographic -serial stdio
+\end{lstlisting}
+Ensure you are in the demo folder before executing the commands. In our project, the source code of the demos are located in Examples folder.
+
+The command qemu-system-arm launches a QEMU virtual machine emulating an ARM Cortex-M3 system using the mps2-an385 machine type. It specifies RTOSDemo.out as the kernel image, disables the QEMU monitor and graphical output, and redirects the serial console to the terminal.
+
+We would like to highlight that in every folder of each project demo, there is a .vscode/tasks.jso file. This file was instrumental during the development phase, as it automated the compilation process by including the make and qemu-system-arm commands.
+
+%Subsequently, you will be able to run, with Visual Studio Code, the file \texttt{main.c} which is reachable in this path \texttt{FreeRTOSv202212.01\textbackslash FreeRTOS\textbackslash Demo\textbackslash CORTEX\_MPS2\_QEMU\_IAR\_GCC\textbackslash} and, if you followed carefully all the steps, you will find a \texttt{.out} file called “\texttt{RTOSDemo.out}” with this path \texttt{FreeRTOSv202212.01\textbackslash FreeRTOS\textbackslash Demo\textbackslash CORTEX\_ MPS2\_QEMU\_IAR\_GCC\textbackslash build\textbackslash gcc\textbackslash output\textbackslash}.
+
+\section{Demos - Practical examples}
+%\setcounter{subsection}{-1}
+
+
+Hands-on projects have been created to illustrate the process of building applications with QEMU and FreeRTOS on a Cortex-M3 microcontroller. In each project, the simulated \textbf{mps2 - an385} development board is utilized due to its comprehensive support for the Cortex-M3 architecture and its robust simulation capabilities, which provide a realistic development environment without the need for physical hardware.
+
+\subsection{demoTimer.c -- Timer-Based Message Delay}
+
+This demo uses a timer to create increasing delays between output messages. Starting with a 1-second delay, each subsequent message delay increases by 1 second. The demo is limited to 7 repetitions but can be adjusted for more. A message is printed on the console after an increasing timeout. The vTimerCallback function checks and increments repetitions, updates and prints the current delay, stops the timer after 7 repetitions.
+
+
+\begin{comment}
+
+\begin{lstlisting}[language=C, caption={The vTimerCallback function checks and increments repetitions, updates and prints the current delay, stops the timer after 7 repetitions.}]
+void vTimerCallback(TimerHandle_t xTimer) {
+    if (repetitions < MAX_REPS) {
+        printf("Message delay: %d\n", currentDelay);
+        repetitions++;
+        currentDelay += 1000;
+        xTimerChangePeriod(xTimer, pdMS_TO_TICKS((currentDelay)), 0);
+    } else {
+        xTimerStop(xTimer, 0);
+    }
+}
+\end{lstlisting}
+    
+\end{comment}
+
+
+\subsection{demoSemaphores.c --  Semaphore-Based task coordination}
+
+This demo implements three mutex semaphores and three tasks to manage access to a critical section. Each task prints a message and uses a timer with respective delays of 1, 2, and 3 seconds.
+An array of semaphore handles (xSemaphores) synchronizes tasks. Each task waits for its semaphore, prints a message, delays, prints a wake-up message, and releases the semaphore to the next task.
+
+The core function initializes semaphores, starts the first semaphore, creates tasks, and starts the FreeRTOS scheduler. Tasks execute cyclically, with each task blocking the others while accessing the critical section.
+
+
+\begin{comment}
+    \begin{lstlisting}[language=C, caption={Task function example}]
+void vTask() {
+    while(1) {
+        if (xSemaphoreTake(xSemaphores[0], portMAX_DELAY) == pdTRUE) {
+            printf("After 1 second...\n");
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            printf("Wake up: semaphore 1\n");
+            xSemaphoreGive(xSemaphores[1]);
+        }
+    }
+}
+
+\end{lstlisting}
+
+\begin{lstlisting}[language=C, caption={Semaphore initialization and task creation}]
+void demo1() {
+    for (int i = 0; i < MAX_TASKS; i++) {
+        xSemaphores[i] = xSemaphoreCreateCounting(MAX_COUNT, 0);
+        if (xSemaphores[i] == NULL) {
+            printf("ERROR: bad semaphore creation.\n");
+        }
+    }
+    xSemaphoreGive(xSemaphores[0]);
+    /* Tasks creation and start of FreeRTOS scheduler */
+
+}
+
+\end{lstlisting}
+\end{comment}
+
+
+\subsection{demoStats.c -- Runtime statistics and task coordination}
+
+This program is an example to show how much space remains unallocated in the heap. It creates two tasks, run concurrently. The former is a simple counter, the latter call the xPortGetFreeHeapSize() function, which returns the total amount of head space that remains unallocated.
+
+\begin{comment}
+    \begin{lstlisting}[language=C, caption={SimpleCounter function}]
+void SimpleCounter(){
+        int i = 0;
+        while(1){
+            printf("Task1 Counter: %d\n", i);
+            i++;
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            if (i >= 99999) {
+                i = 0;
+        }
+    }
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=C, caption={Task2 function (free heap size)}]
+void Task2(){
+
+    while(1){
+        /* Wait for a period to gather sufficient runtime statistics */
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
+        size_t freeHeapSize = xPortGetFreeHeapSize();
+        printf("Free heap size: %u bytes\n", freeHeapSize);
+
+    }
+}
+\end{lstlisting}
+\end{comment}
+
+
+\subsection{demoMatrix.c -- Matrix Multiplication}
+
+This demo performs matrix multiplication between two predefined matrices. Each task handles the multiplication of a specific row from matrix A with a column from matrix B, inserting the result into the corresponding cell of the result matrix C.
+
+The demo includes standard I/O and FreeRTOS headers for task management. It defines matrix dimensions and initializes matrices A and B with predefined values. Tasks are created to handle individual element multiplications and to print the result matrix.
+
+\begin{comment}
+    \begin{lstlisting}[language=C, caption={Main function}]
+void demo4() {
+    /* Populate matrix A */
+...
+    /* Populate matrix B */
+...
+    /* Create tasks for each row of matrix A */
+    for (int i = 0; i < A_ROWS; i++) {
+        for (int j = 0; j < B_COLS; j++) {
+            t_mat *data = (t_mat *)pvPortMalloc(sizeof(t_mat));
+            data->row = i;
+            data->col = j;
+            xTaskCreate(vTaskProduct, "product", configMINIMAL_STACK_SIZE, (void *)data, tskIDLE_PRIORITY + 1, NULL);
+        }
+    }
+
+    /* Create task to print the result matrix */
+    xTaskCreate(vTaskPrint, "print", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
+
+    /* Starting FreeRTOS scheduler */
+    vTaskStartScheduler();
+
+    for(;;);
+}
+
+\end{lstlisting}
+
+\begin{lstlisting}[language=C, caption={Task for matrix multiplication}]
+
+void vTaskProduct(void *data) {
+    t_mat *params = (t_mat *)data;
+    int row = params->row;
+    int col = params->col;
+   
+    int sum = 0;
+    for (int i = 0; i < A_COLS; i++) {
+        sum += A[row][i] * B[i][col];
+    }
+    C[row][col] = sum;
+
+    vTaskDelete(NULL);
+}
+
+
+\end{lstlisting}
+\end{comment}
+
+\subsection{demoHospital.c -- Patient Management System}
+\label{section:demoHospital}
+
+This demo simulates the management of a hospital system. The hospital has a limited number of operating rooms, with only one patient being operated on at a time in each room. Patients are operated on based on a priority system determined by color codes, which define both the priority and the maximum waiting time before the condition worsens.
+
+To manage concurrent access to the operating rooms, semaphores are used to count the number of available rooms. Semaphores are taken when a room is available and released upon the completion of an operation. Queues are utilized to maintain the list of patients waiting for operations, with separate queues for patients with red and green codes. Tasks populate these queues with the arrival times of patients.
+
+Timers manage the duration of operations in each operating room. Tasks run in parallel, allowing for a realistic simulation of the hospital environment.
+
+\subsection{demoHospital2.c -- Emergency Room Management}
+\label{section:demoHospital2}
+
+This demo represents an improvement over the previous hospital management system, with new functionalities and optimizations to better manage patient operations based on priorities. The new system continues to manage patients according to a priority system based on color codes but introduces a more detailed data structure for patients and a more advanced scheduling logic. The additional functionalities include managing patient priorities, removing patients from the list in case of death, and enhancing operation management using task notifications.
+
+Specifically, the `taskPazient` function handles the operation of a single patient. It uses a waiting loop to simulate the operation time and notifies the task scheduler upon operation completion using `xTaskNotifyGive`. This notification mechanism allows effective communication between the task performing the operation and the task scheduler, improving synchronization and flow control.
+
+The task scheduler calculates priorities based on critical time, operation duration, and arrival time, allowing for a more efficient and realistic management of operations.
+
+\section{Scheduler implementation}
+This newly implemented feature aims to simplify the implementation of the previous demos, previously discussed in sections \ref{section:demoHospital} and \ref{section:demoHospital2}, which shows an actual implementation of an hospital management system.
+
+Each patient has a unique ID, an arrival time, a critical time after which the condition worsen, an operation time and a priority code.
+
+The system presume the presence of only an operation room, and schedules the patients based on their criticals time.
+
+% This newly implemented feature aims to improve scheduling for incoming patients in Demo4. Each patient (task) has an ID, arrival time, expected operation duration, a critical time after which their condition worsens, and a priority level.
+
+To simulate the arrival of a patient, a periodic task executed every second is used which creates a task for each patient, and the Operating System is used to schedule them.
+
+In this way, there is no need to implement a big task that occupies its time to schedule each patient, but only one to create them.
+
+To schedule them, the OS implements a polling server scheduler. Its purpose is to execute each periodic task with the highest possible priority.
+The scheduler implements a way to use preemption on each aperiodic task, which is by default disabled for the purpose of this demo, because we need to simulate a single operating room, and it would not be appropriate to have each patient use the operating room only for a small portion of time, and then give it up to other patients until they can use it again.
+
+% A periodic task, executed every second, simulates patient arrivals by creating new patient tasks. The scheduler acts like a polling server, checking if the surgery room is available and if there is a patient ready in the queue.
+
+For this case, if the patient is not being operated before his critical time, it will die. This case also happens when an operation was not completed before the critical time. When a patient is being operated for the amount of time requested, which is fixed for each patient, it will free the operating room and be saved.
+
+% Patients arrive at specific times and, based on their critical times, either start surgery or face worsening conditions if delayed. After surgery, patients leave the room.
+
+\subsection{Scheduler performance evaluation}
+
+To compare the demo with the original FreeRTOS scheduler, the default preemption is used. This is needed because it is the only way to schedule the periodic task correctly, but it implies that the hypothesis made previously is not respected.
+
+The comparation of the performance between the FreeRTOS scheduler with preemption and our custom preemptive scheduler, is shown in the tables below. In the FreeRTOS scheduler, all patients (P1 to P4) are operated on within their deadlines, with none of them experiencing fatal delays. In contrast, our custom preemptive scheduler employs a different task prioritization mechanism, resulting in delayed start times for some operations. Specifically, Patient P3 misses the deadline and dies due to the delayed start of their operation.
+
+\paragraph{FreeRTOS Scheduler with preemption}
+
+\begin{center}
+    \begin{tabular}{c|c|c|c|c|c|c}
+   \textbf{Patient} & \textbf{Arrival time} & \textbf{Starting Operation} & \textbf{Duration} & \textbf{Deadline} & \textbf{Ending Operation} & \textbf{Died (yes/no)}\\
+    \hline
+         P1 & 2 & 2 & 3 & 9 & 5 & no \\
+         P2 & 2 & 2 & 4 & 8 & 6 & no \\
+         P3 & 6 & 6 & 4 & 12 & 10 & no \\
+         P4 & 8 & 8 & 1 & 10 & 9 & no \\
+    \end{tabular}
+\end{center}
+
+
+\paragraph{Our Scheduler with preemption}
+
+\begin{center}
+    \begin{tabular}{c|c|c|c|c|c|c}
+   \textbf{Patient} & \textbf{Arrival time} & \textbf{Starting Operation} & \textbf{Duration} & \textbf{Deadline} & \textbf{Ending Operation} & \textbf{Died (yes/no)}\\
+    \hline
+         P1 & 2 & 6 & 3 & 9 & 5 & no  \\
+         P2 & 2 & 2 & 4 & 8 & 6 & no  \\
+         P3 & 6 & 10 & 4 & 12 & - & yes \\
+         P4 & 8 & 9 & 1 & 10 & 10 & no \\
+    \end{tabular}
+\end{center}
+
+
+\section{Statement of work and final declaration}
+
+All members participated actively and collaboratively. The work of each member is explained in this table:\\
+
+
+\begin{tabular}{|c|c|}
+    \hline
+    \textbf{Antonio Capece} & Project management, Scheduler implementation and showcasing \\ \hline
+    \textbf{Federico Cagnazzo} & Demos development, Slides writing, Tutorial writing \\ \hline
+    \textbf{Giovanni de Maria} & Demos development, Report writing, Tutorial writing \\ \hline
+    \textbf{Andrea Carcagnì} & Co-project management, Demos development \\ \hline
+\end{tabular}
+
+\bigskip
+
+We, the undersigned students, members of Group Nr. 09, hereby declare that the contents presented in this document and in the Git repository are the result of our original work. 
+\begin{flushleft}
+Antonio Capece (323386), Federico Cagnazzo (328833),\\
+Giovanni de Maria (331031), Andrea Carcagnì (331618)\\
+
+
+\textit{Turin, \today}
+\end{flushleft}
+\end{document}
