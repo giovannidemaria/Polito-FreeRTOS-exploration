@@ -1,5 +1,8 @@
-# GROUP 09 - CAOS PROJECT 2023-24
-Repository for the group project: HaclOSsim - Computer Architectures and Operating Systems
+# Computer architectures and operating systems - Group project
+
+This is the Group project that I have done with some of my colleagues at Politecnico di Torino for the [Computer architectures and operating systems Exam](https://didattica.polito.it/pls/portal30/gap.pkg_guide.viewGap?p_cod_ins=01GYKUV&p_a_acc=2024&p_header=S&p_lang=&multi=N).
+
+## Description
 
 This project aims to explore the usage of a real-time operating system, with hand-practice. The used operating system was FreeRTOS, in which we implemented some demos and added a new feature. 
 
