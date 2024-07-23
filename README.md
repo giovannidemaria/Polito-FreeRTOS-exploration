@@ -1,6 +1,6 @@
 # Computer architectures and operating systems - Group project
 
-This is the Group project that I have done with some of my colleagues at Politecnico di Torino for the [Computer architectures and operating systems Exam](https://didattica.polito.it/pls/portal30/gap.pkg_guide.viewGap?p_cod_ins=01GYKUV&p_a_acc=2024&p_header=S&p_lang=&multi=N).
+This is the Group project that I have done with some of my colleagues ([Federico Cagnazzo @efsi28] (https://www.github.com/efsi28), [Antonio Capece @antox01] (https://www.github.com/antox01), [Andrea Carcagnì @n4rciso] (https://www.github.com/n4rciso)) at Politecnico di Torino for the [Computer architectures and operating systems Exam](https://didattica.polito.it/pls/portal30/gap.pkg_guide.viewGap?p_cod_ins=01GYKUV&p_a_acc=2024&p_header=S&p_lang=&multi=N).
 
 ## Description
 
